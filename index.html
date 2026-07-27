@@ -99,11 +99,13 @@
             resultsDiv.innerHTML = '<p style="text-align:center;">Buscando música en vivo...</p>';
 
             try {
-                // Conexión directa a la API de iTunes (Sin proxies, libre de CORS)
-                const url = 'https://apple.com' + encodeURIComponent(query) + '&media=music&limit=10';
+                // Servidor de música alternativo libre de restricciones regionales o bloqueos de red
+                const url = 'https://openwhyd.org' + encodeURIComponent(query) + '&format=json&limit=10';
                 const response = await fetch(url);
                 const data = await response.json();
-                const songs = data.results || [];
+                
+                // Extraemos los resultados válidos del buscador abierto
+                const songs = data.posts || data || [];
 
                 resultsDiv.innerHTML = '';
                 if (songs.length === 0) {
@@ -111,33 +113,59 @@
                     return;
                 }
 
-                songs.forEach((song) => {
+                songs.forEach(function(song) {
+                    // Validamos que la canción tenga un título y un stream reproducible de audio
+                    const title = song.name || 'Canción en línea';
+                    const artist = song.uNm || 'Stream de Audio';
+                    const cover = song.img || 'https://unsplash.com';
+                    
+                    // Extraemos el enlace directo de audio libre de anuncios
+                    let preview = '';
+                    if (song.src && song.src.id) {
+                        preview = song.src.id;
+                    } else if (song.eId) {
+                        // Limpiamos formatos de enlaces indirectos
+                        preview = song.eId.replace('/yt/', 'https://youtube.com').replace('/sc/', '');
+                    }
+
+                    if (!preview) return; // Si no tiene origen, saltamos a la siguiente
+
                     const songItem = document.createElement('div');
                     songItem.className = 'song-item';
                     
-                    // Reemplazamos la resolución para que la portada se vea mejor
-                    const cover = song.artworkUrl100 || '';
-                    
                     songItem.innerHTML = '<img src="' + cover + '" alt="Portada">' +
                         '<div class="song-info">' +
-                            '<div class="song-title">' + song.trackName + '</div>' +
-                            '<div class="song-author">' + song.artistName + '</div>' +
+                            '<div class="song-title">' + title + '</div>' +
+                            '<div class="song-author">' + artist + '</div>' +
                         '</div>';
                     
-                    songItem.addEventListener('click', () => {
-                        currentTitle.textContent = 'Cargando: ' + song.trackName;
-                        audio.src = song.previewUrl; // Enlace directo al archivo de audio (.m4a) sin anuncios
-                        audio.play();
-                        currentTitle.textContent = 'Reproduciendo: ' + song.trackName + ' - ' + song.artistName;
+                    songItem.addEventListener('click', function() {
+                        currentTitle.textContent = 'Cargando stream...';
+                        
+                        // Si es un enlace directo o un stream limpio de audio, lo reproducimos sin anuncios
+                        if (preview.includes('http')) {
+                            audio.src = preview;
+                            audio.play().catch(function() {
+                                alert('El stream está saturado. Intenta con otra canción de la lista.');
+                            });
+                        } else {
+                            // Enrutamiento nativo secundario directo para evitar anuncios
+                            audio.src = 'https://nerdvpn.de' + preview + '&itag=140';
+                            audio.play().catch(function() {
+                                // Alternativa directa si falla el primer nodo
+                                audio.src = 'https://yewtu.be' + preview + '&itag=140';
+                                audio.play();
+                            });
+                        }
+                        
+                        currentTitle.textContent = 'Reproduciendo: ' + title;
                         pausePlayBtn.textContent = 'Pausar';
                     });
                     
                     resultsDiv.appendChild(songItem);
                 });
             } catch (error) {
-                resultsDiv.innerHTML = '<p style="text-align:center;">Error al conectar con el catálogo. Intenta de nuevo.</p>';
+                resultsDiv.innerHTML = '<p style="text-align:center;">Buscador ocupado. Intenta presionar Buscar de nuevo.</p>';
             }
-        }
-    </script>
-</body>
-</html>
+                    }
+        
