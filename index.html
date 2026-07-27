@@ -24,7 +24,7 @@
             border-radius: 0 20px 20px 0; background-color: #1DB954;
             color: white; font-weight: bold; cursor: pointer;
         }
-        #results { margin-bottom: 100px; }
+        #results { margin-bottom: 120px; }
         .song-item {
             display: flex; align-items: center; padding: 10px;
             margin-bottom: 10px; background-color: #181818;
@@ -44,12 +44,8 @@
             display: flex; flex-direction: column; align-items: center;
             box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
         }
-        #current-title { font-size: 14px; font-weight: bold; margin-bottom: 5px; text-align: center; }
-        .controls { display: flex; gap: 20px; margin-top: 5px; }
-        .btn-play {
-            background: #1DB954; padding: 10px 20px; 
-            border-radius: 20px; font-weight: bold; border: none; color: white;
-        }
+        #current-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #1DB954; }
+        audio { width: 100%; max-width: 400px; }
     </style>
 </head>
 <body>
@@ -57,7 +53,7 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="query" placeholder="Busca un artista (ej: Mana, Electronic, Pop)...">
+        <input type="text" id="query" placeholder="Busca un artista (ej: Mana)...">
         <button id="search-btn">Buscar</button>
     </div>
 
@@ -65,9 +61,8 @@
 
     <div class="player-bar">
         <div id="current-title">Ninguna canción seleccionada</div>
-        <div class="controls">
-            <button class="btn-play" id="btn-pause-play">Pausar</button>
-        </div>
+        <!-- El reproductor visual nativo que le da permisos de audio al celular -->
+        <audio id="audio-player" controls autoplay></audio>
     </div>
 
     <script>
@@ -75,72 +70,43 @@
         const queryInput = document.getElementById('query');
         const resultsDiv = document.getElementById('results');
         const currentTitle = document.getElementById('current-title');
-        const pausePlayBtn = document.getElementById('btn-pause-play');
+        const audioPlayer = document.getElementById('audio-player');
 
-        const audio = new Audio();
-
-        // Base de datos de música real en línea con streams directos libres de bloqueos CORS
-                // Base de datos de música real con servidores libres de bloqueos
         const baseDeDatosMusical = [
             {
                 titulo: "Labios Compartidos",
                 artista: "Maná",
                 portada: "https://wikimedia.org",
-                stream: "https://public.cat"
+                stream: "https://archive.org"
             },
             {
                 titulo: "Clavado En Un Bar",
                 artista: "Maná",
                 portada: "https://wikimedia.org",
                 stream: "https://archive.org"
-            },
-            {
-                titulo: "Electronic Dance Pulse",
-                artista: "Mix Chileno",
-                portada: "https://unsplash.com",
-                stream: "https://google.com"
-            },
-            {
-                titulo: "Synthwave Beats",
-                artista: "Retro Wave",
-                portada: "https://unsplash.com",
-                stream: "https://google.com"
             }
         ];
-
 
         searchBtn.addEventListener('click', searchMusic);
         queryInput.addEventListener('keypress', function(e) { 
             if (e.key === 'Enter') searchMusic(); 
         });
 
-        pausePlayBtn.addEventListener('click', function() {
-            if (audio.paused) {
-                audio.play();
-                pausePlayBtn.textContent = 'Pausar';
-            } else {
-                audio.pause();
-                pausePlayBtn.textContent = 'Reproducir';
-            }
-        });
-
         function searchMusic() {
             const query = queryInput.value.trim().toLowerCase();
             if (!query) return;
 
-            resultsDiv.innerHTML = '<p style="text-align:center;">Buscando en catálogo directo...</p>';
+            resultsDiv.innerHTML = '<p style="text-align:center;">Buscando...</p>';
 
-            // Filtrado inmediato libre de fallos de red o caídas de servidores ajenos
             const cancionesEncontradas = baseDeDatosMusical.filter(function(item) {
                 return item.titulo.toLowerCase().includes(query) || item.artista.toLowerCase().includes(query);
             });
 
-            // Simulamos un retraso de procesamiento limpio de 300ms
             setTimeout(function() {
                 resultsDiv.innerHTML = '';
                 
                 if (cancionesEncontradas.length === 0) {
-                    resultsDiv.innerHTML = '<p style="text-align:center;">No se encontraron resultados para este término.</p>';
+                    resultsDiv.innerHTML = '<p style="text-align:center;">No se encontraron resultados.</p>';
                     return;
                 }
 
@@ -155,18 +121,18 @@
                         '</div>';
                     
                     songItem.addEventListener('click', function() {
-                        currentTitle.textContent = 'Cargando stream...';
-                        audio.src = song.stream; 
-                        audio.play().catch(function() {
-                            alert('Toca de nuevo para reproducir el stream.');
+                        currentTitle.textContent = 'Cargando: ' + song.titulo;
+                        // Cargamos la música directo en la barra visual
+                        audioPlayer.src = song.stream; 
+                        audioPlayer.play().catch(function() {
+                            currentTitle.textContent = 'Presiona PLAY en la barra de abajo';
                         });
-                        currentTitle.textContent = 'Reproduciendo: ' + song.titulo + ' - ' + song.artista;
-                        pausePlayBtn.textContent = 'Pausar';
+                        currentTitle.textContent = 'Reproduciendo: ' + song.titulo;
                     });
                     
                     resultsDiv.appendChild(songItem);
                 });
-            }, 300);
+            }, 200);
         }
     </script>
 </body>
