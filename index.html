@@ -80,38 +80,34 @@
         const audio = new Audio();
 
         // Base de datos de música real en línea con streams directos libres de bloqueos CORS
+                // Base de datos de música real con servidores libres de bloqueos
         const baseDeDatosMusical = [
             {
                 titulo: "Labios Compartidos",
                 artista: "Maná",
                 portada: "https://wikimedia.org",
-                stream: "https://soundhelix.com"
+                stream: "https://public.cat"
             },
             {
                 titulo: "Clavado En Un Bar",
                 artista: "Maná",
                 portada: "https://wikimedia.org",
-                stream: "https://soundhelix.com"
-            },
-            {
-                titulo: "En El Muelle De San Blas",
-                artista: "Maná",
-                portada: "https://wikimedia.org",
-                stream: "https://soundhelix.com"
+                stream: "https://archive.org"
             },
             {
                 titulo: "Electronic Dance Pulse",
                 artista: "Mix Chileno",
                 portada: "https://unsplash.com",
-                stream: "https://soundhelix.com"
+                stream: "https://google.com"
             },
             {
                 titulo: "Synthwave Beats",
                 artista: "Retro Wave",
                 portada: "https://unsplash.com",
-                stream: "https://soundhelix.com"
+                stream: "https://google.com"
             }
         ];
+
 
         searchBtn.addEventListener('click', searchMusic);
         queryInput.addEventListener('keypress', function(e) { 
