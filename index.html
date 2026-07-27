@@ -40,13 +40,19 @@
         
         .player-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
-            background-color: #282828; padding: 15px;
+            background-color: #282828; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
             box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
         }
-        #current-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #1DB954; }
-        audio { width: 100%; max-width: 400px; }
+        #current-title { font-size: 14px; font-weight: bold; margin-bottom: 12px; text-align: center; color: #1DB954; }
+        .controls-btn {
+            background-color: #1DB954; color: white; border: none;
+            padding: 12px 30px; border-radius: 25px; font-weight: bold;
+            font-size: 16px; cursor: pointer; width: 80%; max-width: 300px;
+        }
     </style>
+    <!-- Cargamos el motor de audio profesional Howler.js libre de bloqueos móviles -->
+    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
@@ -61,7 +67,8 @@
 
     <div class="player-bar">
         <div id="current-title">Ninguna canción seleccionada</div>
-        <audio id="audio-player" controls autoplay></audio>
+        <!-- Botón de control manual directo -->
+        <button id="main-audio-btn" class="controls-btn">PLAY / PAUSA</button>
     </div>
 
     <script>
@@ -69,9 +76,11 @@
         const queryInput = document.getElementById('query');
         const resultsDiv = document.getElementById('results');
         const currentTitle = document.getElementById('current-title');
-        const audioPlayer = document.getElementById('audio-player');
+        const mainAudioBtn = document.getElementById('main-audio-btn');
 
-        // Canales de streaming estables de alta velocidad para dispositivos móviles
+        let soundEffect = null;
+
+        // Canales con protocolo HTTPS forzado de alta fidelidad para Android
         const baseDeDatosMusical = [
             {
                 titulo: "Radio Rock Hits",
@@ -95,7 +104,7 @@
                 titulo: "Radio Chill Out",
                 artista: "Música Relajante Lounge",
                 portada: "https://unsplash.com",
-                stream: "https://radiomast.io"
+                stream: "https://101.ru"
             }
         ];
 
@@ -104,46 +113,71 @@
             if (e.key === 'Enter') searchMusic(); 
         });
 
+        // Control maestro de Play/Pausa que gestiona Howler de forma directa
+        mainAudioBtn.addEventListener('click', function() {
+            if (!soundEffect) return;
+            if (soundEffect.playing()) {
+                soundEffect.pause();
+                mainAudioBtn.style.backgroundColor = '#888888';
+            } else {
+                soundEffect.play();
+                mainAudioBtn.style.backgroundColor = '#1DB954';
+            }
+        });
+
         function searchMusic() {
             const query = queryInput.value.trim().toLowerCase();
             if (!query) return;
 
-            resultsDiv.innerHTML = '<p style="text-align:center;">Conectando...</p>';
+            resultsDiv.innerHTML = '<p style="text-align:center;">Filtrando canales...</p>';
 
             const cancionesEncontradas = baseDeDatosMusical.filter(function(item) {
                 return item.titulo.toLowerCase().includes(query) || item.artista.toLowerCase().includes(query);
             });
 
-            setTimeout(function() {
-                resultsDiv.innerHTML = '';
-                
-                if (cancionesEncontradas.length === 0) {
-                    resultsDiv.innerHTML = '<p style="text-align:center;">Usa palabras como: Rock, Pop, Electro o Chill</p>';
-                    return;
-                }
+            resultsDiv.innerHTML = '';
+            
+            if (cancionesEncontradas.length === 0) {
+                resultsDiv.innerHTML = '<p style="text-align:center;">Prueba con: Rock, Pop, Electro o Chill</p>';
+                return;
+            }
 
-                cancionesEncontradas.forEach(function(song) {
-                    const songItem = document.createElement('div');
-                    songItem.className = 'song-item';
+            cancionesEncontradas.forEach(function(song) {
+                const songItem = document.createElement('div');
+                songItem.className = 'song-item';
+                
+                songItem.innerHTML = '<img src="' + song.portada + '" alt="Portada">' +
+                    '<div class="song-info">' +
+                        '<div class="song-title">' + song.titulo + '</div>' +
+                        '<div class="song-author">' + song.artista + '</div>' +
+                    '</div>';
+                
+                songItem.addEventListener('click', function() {
+                    currentTitle.textContent = 'Conectando audio profesional...';
                     
-                    songItem.innerHTML = '<img src="' + song.portada + '" alt="Portada">' +
-                        '<div class="song-info">' +
-                            '<div class="song-title">' + song.titulo + '</div>' +
-                            '<div class="song-author">' + song.artista + '</div>' +
-                        '</div>';
-                    
-                    songItem.addEventListener('click', function() {
-                        currentTitle.textContent = 'Conectando señal: ' + song.titulo;
-                        audioPlayer.src = song.stream; 
-                        audioPlayer.play().catch(function() {
-                            currentTitle.textContent = 'Presiona el botón de PLAY abajo';
-                        });
-                        currentTitle.textContent = 'Escuchando: ' + song.titulo;
+                    // Si ya había una canción sonando, la destruimos por completo
+                    if (soundEffect) {
+                        soundEffect.unload();
+                    }
+
+                    // Forzamos al motor Howler a abrir el canal de música saltando el bloqueo de Chrome
+                    soundEffect = new Howl({
+                        src: [song.stream],
+                        html5: true, // Habilita streaming continuo de larga duración
+                        format: ['mp3'],
+                        autoplay: true,
+                        onload: function() {
+                            currentTitle.textContent = 'Escuchando: ' + song.titulo;
+                            mainAudioBtn.style.backgroundColor = '#1DB954';
+                        },
+                        onloaderror: function() {
+                            currentTitle.textContent = 'Error de red en canal. Elige otro.';
+                        }
                     });
-                    
-                    resultsDiv.appendChild(songItem);
                 });
-            }, 200);
+                
+                resultsDiv.appendChild(songItem);
+            });
         }
     </script>
 </body>
