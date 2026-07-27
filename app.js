@@ -5,7 +5,7 @@ const resultsDiv = document.getElementById('results');
 const currentTitle = document.getElementById('current-title');
 const pausePlayBtn = document.getElementById('btn-pause-play');
 
-// 1. Inicializa el reproductor incrustado cuando la API de YouTube esté lista
+// 1. Inicializa el reproductor oculto cuando la API de YouTube esté lista
 window.onYouTubeIframeAPIReady = function() {
     player = new YT.Player('player', {
         height: '1', width: '1', videoId: '',
@@ -26,7 +26,7 @@ pausePlayBtn.addEventListener('click', () => {
     else { player.playVideo(); pausePlayBtn.textContent = 'Pausar'; }
 });
 
-// 2. Lógica para buscar canciones en la base de datos global
+// 2. Lógica para buscar canciones reales en línea
 async function searchMusic() {
     const query = queryInput.value.trim();
     if (!query) return;
@@ -34,7 +34,7 @@ async function searchMusic() {
     resultsDiv.innerHTML = '<p style="text-align:center;">Buscando música en línea...</p>';
 
     try {
-        // Consultamos un proxy de sugerencias abierto que no bloquea la seguridad web
+        // Consultamos un motor de sugerencias abierto compatible con la nube de GitHub
         const response = await fetch(`https://google.com{encodeURIComponent(query)}`);
         const text = await response.text();
         const cleanText = text.substring(text.indexOf("(") + 1, text.lastIndexOf(")"));
@@ -47,23 +47,23 @@ async function searchMusic() {
             return;
         }
 
-        // Listamos las mejores coincidencias en pantalla
+        // Desplegamos la lista de canciones en la pantalla
         suggestions.slice(0, 6).forEach((item, index) => {
             const songItem = document.createElement('div');
             songItem.className = 'song-item';
             songItem.style.padding = '15px';
             songItem.style.borderBottom = '1px solid #282828';
             songItem.style.cursor = 'pointer';
-            songItem.innerHTML = `🎵 <strong>${item[0]}</strong> <br><small style="color:#b3b3b3;">Stream de audio #${index+1}</small>`;
+            songItem.innerHTML = `🎵 <strong>${item}</strong> <br><small style="color:#b3b3b3;">Stream de audio #${index+1}</small>`;
             
-            // 3. Al hacer clic, reproducimos el audio del video de manera directa
+            // 3. Al hacer clic, reproducimos la canción de forma limpia
             songItem.addEventListener('click', () => {
-                currentTitle.textContent = `Cargando stream para: ${item[0]}`;
+                currentTitle.textContent = `Cargando stream para: ${item}`;
                 pausePlayBtn.textContent = 'Pausar';
                 
-                // Conectamos un iframe dinámico para mandar el audio directo sin anuncios
-                player.loadVideoByUrl(`https://youtube.com{encodeURIComponent(item[0])}`);
-                currentTitle.textContent = `Reproduciendo: ${item[0]}`;
+                // Conectamos el buscador directo al reproductor sin anuncios
+                player.loadVideoByUrl(`https://youtube.com{encodeURIComponent(item)}`);
+                currentTitle.textContent = `Reproduciendo: ${item}`;
             });
             resultsDiv.appendChild(songItem);
         });
