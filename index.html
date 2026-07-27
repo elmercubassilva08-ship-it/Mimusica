@@ -53,7 +53,7 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="query" placeholder="Busca un artista (ej: Mana)...">
+        <input type="text" id="query" placeholder="Busca: Rock, Pop, Chill o Electro...">
         <button id="search-btn">Buscar</button>
     </div>
 
@@ -61,7 +61,6 @@
 
     <div class="player-bar">
         <div id="current-title">Ninguna canción seleccionada</div>
-        <!-- El reproductor visual nativo que le da permisos de audio al celular -->
         <audio id="audio-player" controls autoplay></audio>
     </div>
 
@@ -72,18 +71,31 @@
         const currentTitle = document.getElementById('current-title');
         const audioPlayer = document.getElementById('audio-player');
 
+        // Canales de streaming estables de alta velocidad para dispositivos móviles
         const baseDeDatosMusical = [
             {
-                titulo: "Labios Compartidos",
-                artista: "Maná",
-                portada: "https://wikimedia.org",
-                stream: "https://archive.org"
+                titulo: "Radio Rock Hits",
+                artista: "Música Rock en Vivo",
+                portada: "https://unsplash.com",
+                stream: "https://rockantenne.de"
             },
             {
-                titulo: "Clavado En Un Bar",
-                artista: "Maná",
-                portada: "https://wikimedia.org",
-                stream: "https://archive.org"
+                titulo: "Radio Pop Dance",
+                artista: "Éxitos Pop en Vivo",
+                portada: "https://unsplash.com",
+                stream: "https://unitedradio.it"
+            },
+            {
+                titulo: "Radio Electro Beats",
+                artista: "Música Electrónica en Vivo",
+                portada: "https://unsplash.com",
+                stream: "https://addradio.de"
+            },
+            {
+                titulo: "Radio Chill Out",
+                artista: "Música Relajante Lounge",
+                portada: "https://unsplash.com",
+                stream: "https://radiomast.io"
             }
         ];
 
@@ -96,7 +108,7 @@
             const query = queryInput.value.trim().toLowerCase();
             if (!query) return;
 
-            resultsDiv.innerHTML = '<p style="text-align:center;">Buscando...</p>';
+            resultsDiv.innerHTML = '<p style="text-align:center;">Conectando...</p>';
 
             const cancionesEncontradas = baseDeDatosMusical.filter(function(item) {
                 return item.titulo.toLowerCase().includes(query) || item.artista.toLowerCase().includes(query);
@@ -106,7 +118,7 @@
                 resultsDiv.innerHTML = '';
                 
                 if (cancionesEncontradas.length === 0) {
-                    resultsDiv.innerHTML = '<p style="text-align:center;">No se encontraron resultados.</p>';
+                    resultsDiv.innerHTML = '<p style="text-align:center;">Usa palabras como: Rock, Pop, Electro o Chill</p>';
                     return;
                 }
 
@@ -121,13 +133,12 @@
                         '</div>';
                     
                     songItem.addEventListener('click', function() {
-                        currentTitle.textContent = 'Cargando: ' + song.titulo;
-                        // Cargamos la música directo en la barra visual
+                        currentTitle.textContent = 'Conectando señal: ' + song.titulo;
                         audioPlayer.src = song.stream; 
                         audioPlayer.play().catch(function() {
-                            currentTitle.textContent = 'Presiona PLAY en la barra de abajo';
+                            currentTitle.textContent = 'Presiona el botón de PLAY abajo';
                         });
-                        currentTitle.textContent = 'Reproduciendo: ' + song.titulo;
+                        currentTitle.textContent = 'Escuchando: ' + song.titulo;
                     });
                     
                     resultsDiv.appendChild(songItem);
