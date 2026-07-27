@@ -99,11 +99,11 @@
             resultsDiv.innerHTML = '<p style="text-align:center;">Buscando música en vivo...</p>';
 
             try {
-                // Buscador global de música libre de restricciones
-                const response = await fetch(`https://allorigins.win{encodeURIComponent(`https://deezer.com{query}`)}`);
+                // Conexión directa a la API de iTunes (Sin proxies, libre de CORS)
+                const url = 'https://apple.com' + encodeURIComponent(query) + '&media=music&limit=10';
+                const response = await fetch(url);
                 const data = await response.json();
-                const json = JSON.parse(data.contents);
-                const songs = json.data || [];
+                const songs = data.results || [];
 
                 resultsDiv.innerHTML = '';
                 if (songs.length === 0) {
@@ -111,30 +111,31 @@
                     return;
                 }
 
-                songs.slice(0, 10).forEach((song) => {
+                songs.forEach((song) => {
                     const songItem = document.createElement('div');
                     songItem.className = 'song-item';
                     
-                    songItem.innerHTML = `
-                        <img src="${song.album.cover_small}" alt="Portada">
-                        <div class="song-info">
-                            <div class="song-title">${song.title}</div>
-                            <div class="song-author">${song.artist.name}</div>
-                        </div>
-                    `;
+                    // Reemplazamos la resolución para que la portada se vea mejor
+                    const cover = song.artworkUrl100 || '';
+                    
+                    songItem.innerHTML = '<img src="' + cover + '" alt="Portada">' +
+                        '<div class="song-info">' +
+                            '<div class="song-title">' + song.trackName + '</div>' +
+                            '<div class="song-author">' + song.artistName + '</div>' +
+                        '</div>';
                     
                     songItem.addEventListener('click', () => {
-                        currentTitle.textContent = `Cargando: ${song.title}`;
-                        audio.src = song.preview;
+                        currentTitle.textContent = 'Cargando: ' + song.trackName;
+                        audio.src = song.previewUrl; // Enlace directo al archivo de audio (.m4a) sin anuncios
                         audio.play();
-                        currentTitle.textContent = `Reproduciendo: ${song.title} - ${song.artist.name}`;
+                        currentTitle.textContent = 'Reproduciendo: ' + song.trackName + ' - ' + song.artistName;
                         pausePlayBtn.textContent = 'Pausar';
                     });
                     
                     resultsDiv.appendChild(songItem);
                 });
             } catch (error) {
-                resultsDiv.innerHTML = '<p style="text-align:center;">Error de red. Intenta buscar otra vez.</p>';
+                resultsDiv.innerHTML = '<p style="text-align:center;">Error al conectar con el catálogo. Intenta de nuevo.</p>';
             }
         }
     </script>
