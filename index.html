@@ -80,9 +80,11 @@
         const audio = new Audio();
 
         searchBtn.addEventListener('click', searchMusic);
-        queryInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchMusic(); });
+        queryInput.addEventListener('keypress', function(e) { 
+            if (e.key === 'Enter') searchMusic(); 
+        });
 
-        pausePlayBtn.addEventListener('click', () => {
+        pausePlayBtn.addEventListener('click', function() {
             if (audio.paused) {
                 audio.play();
                 pausePlayBtn.textContent = 'Pausar';
@@ -125,7 +127,7 @@
                         preview = song.src.id;
                     } else if (song.eId) {
                         // Limpiamos formatos de enlaces indirectos
-                        preview = song.eId.replace('/yt/', 'https://youtube.com').replace('/sc/', '');
+                        preview = song.eId.replace('/yt/', '').replace('/sc/', '');
                     }
 
                     if (!preview) return; // Si no tiene origen, saltamos a la siguiente
@@ -149,12 +151,14 @@
                                 alert('El stream está saturado. Intenta con otra canción de la lista.');
                             });
                         } else {
-                            // Enrutamiento nativo secundario directo para evitar anuncios
+                            // Enrutamiento nativo secundario directo para evitar anuncios usando instancias estables de Invidious
                             audio.src = 'https://nerdvpn.de' + preview + '&itag=140';
                             audio.play().catch(function() {
                                 // Alternativa directa si falla el primer nodo
                                 audio.src = 'https://yewtu.be' + preview + '&itag=140';
-                                audio.play();
+                                audio.play().catch(function() {
+                                    alert('El enlace de este audio caducó. Intenta tocar otro resultado.');
+                                });
                             });
                         }
                         
@@ -167,5 +171,7 @@
             } catch (error) {
                 resultsDiv.innerHTML = '<p style="text-align:center;">Buscador ocupado. Intenta presionar Buscar de nuevo.</p>';
             }
-                    }
-        
+        }
+    </script>
+</body>
+</html>
