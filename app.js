@@ -1,71 +1,82 @@
-let player;
-const searchBtn = document.getElementById('search-btn');
-const queryInput = document.getElementById('query');
-const resultsDiv = document.getElementById('results');
-const currentTitle = document.getElementById('current-title');
-const pausePlayBtn = document.getElementById('btn-pause-play');
+// Referencias a los elementos del HTML
+const inputBuscar = document.getElementById('inputBuscar');
+const btnBuscar = document.getElementById('btnBuscar');
+const listaCanciones = document.getElementById('listaCanciones');
+const reproductorAudio = document.getElementById('reproductorAudio');
+const textoReproduciendo = document.getElementById('textoReproduciendo');
 
-// Creamos un elemento de audio nativo para reproducir los streams directos
-const audio = new Audio();
+// Función principal para buscar música en internet usando una API proxy de Deezer
+async function buscarMusica(termino) {
+    if (!termino.trim()) return;
 
-searchBtn.addEventListener('click', searchMusic);
-queryInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchMusic(); });
-
-pausePlayBtn.addEventListener('click', () => {
-    if (audio.paused) {
-        audio.play();
-        pausePlayBtn.textContent = 'Pausar';
-    } else {
-        audio.pause();
-        pausePlayBtn.textContent = 'Reproducir';
-    }
-});
-
-// Lógica para buscar canciones reales en línea usando la API libre de Deezer
-async function searchMusic() {
-    const query = queryInput.value.trim();
-    if (!query) return;
-
-    resultsDiv.innerHTML = '<p style="text-align:center;">Buscando canciones en línea...</p>';
+    // Limpiamos la lista y mostramos un mensaje de carga
+    listaCanciones.innerHTML = '<p class="mensaje">Buscando...</p>';
 
     try {
-        // Consultamos la API musical abierta a través de un proxy libre de bloqueos CORS
-        const response = await fetch(`https://allorigins.win{encodeURIComponent(`https://deezer.com{query}`)}`);
-        const data = await response.json();
-        const json = JSON.parse(data.contents);
-        const songs = json.data || [];
+        // Usamos un proxy público para evitar problemas de CORS al desarrollar en GitHub Pages
+        const url = `https://corsproxy.io{encodeURIComponent(`https://deezer.com{termino}`)}`;
+        
+        const respuesta = await fetch(url);
+        const datos = await respuesta.json();
 
-        resultsDiv.innerHTML = '';
-        if (songs.length === 0) {
-            resultsDiv.innerHTML = '<p style="text-align:center;">No se encontraron resultados.</p>';
+        // Validamos si la API devolvió canciones
+        if (!datos.data || datos.data.length === 0) {
+            listaCanciones.innerHTML = '<p class="mensaje">No se encontraron resultados.</p>';
             return;
         }
 
-        // Desplegamos la lista de canciones con sus portadas reales
-        songs.slice(0, 10).forEach((song) => {
-            const songItem = document.createElement('div');
-            songItem.className = 'song-item';
+        // Limpiamos el mensaje de carga para poner los resultados reales
+        listaCanciones.innerHTML = '';
+
+        // Recorremos las canciones encontradas (máximo 10 resultados)
+        datos.data.slice(0, 10).forEach(cancion => {
             
-            songItem.innerHTML = `
-                <img src="${song.album.cover_small}" alt="Portada" style="width:50px; height:50px; border-radius:4px; margin-right:15px;">
+            // Creamos el contenedor de la canción
+            const tarjetaCancion = document.createElement('div');
+            tarjetaCancion.className = 'song-item';
+            
+            // Insertamos la estructura con los datos reales obtenidos de internet
+            tarjetaCancion.innerHTML = `
+                <img src="${cancion.album.cover_medium}" alt="Portada de ${cancion.title}" class="song-cover">
                 <div class="song-info">
-                    <div class="song-title" style="font-weight:bold; font-size:14px;">${song.title}</div>
-                    <div class="song-author" style="color:#b3b3b3; font-size:12px;">${song.artist.name}</div>
+                    <span class="song-title">${cancion.title}</span>
+                    <span class="song-artist">${cancion.artist.name}</span>
                 </div>
             `;
-            
-            // Al hacer clic, reproducimos el stream de audio limpio de inmediato
-            songItem.addEventListener('click', () => {
-                currentTitle.textContent = `Cargando: ${song.title} - ${song.artist.name}`;
-                audio.src = song.preview; // Stream de audio oficial directo sin anuncios
-                audio.play();
-                currentTitle.textContent = `Reproduciendo: ${song.title}`;
-                pausePlayBtn.textContent = 'Pausar';
+
+            // Evento: Al hacer clic en la canción, se reproduce en la barra inferior
+            tarjetaCancion.addEventListener('click', () => {
+                // cancion.preview contiene el enlace directo al archivo .mp3 de 30 segundos
+                reproductorAudio.src = cancion.preview; 
+                reproductorAudio.play();
+                
+                // Actualizamos el texto del reproductor inferior
+                textoReproduciendo.textContent = `Escuchando: ${cancion.title} - ${cancion.artist.name}`;
             });
-            
-            resultsDiv.appendChild(songItem);
+
+            // Agregamos la tarjeta a la lista visible en pantalla
+            listaCanciones.appendChild(tarjetaCancion);
         });
+
     } catch (error) {
-        resultsDiv.innerHTML = '<p style="text-align:center;">Error de conexión con el catálogo. Intenta de nuevo.</p>';
+        console.error("Error al obtener la música:", error);
+        listaCanciones.innerHTML = '<p class="mensaje" style="color: red;">Error de conexión. Inténtalo de nuevo.</p>';
     }
 }
+
+// Escuchar el clic en el botón de buscar
+btnBuscar.addEventListener('click', () => {
+    buscarMusica(inputBuscar.value);
+});
+
+// Escuchar la tecla "Enter" en el campo de texto
+inputBuscar.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        buscarMusica(inputBuscar.value);
+    }
+});
+
+// Cargar una búsqueda inicial al abrir la página (por ejemplo: Maná)
+window.addEventListener('DOMContentLoaded', () => {
+    buscarMusica('Maná');
+});
