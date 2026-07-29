@@ -1,45 +1,136 @@
-<!-- Tu barra de búsqueda actual -->
-<input type="text" id="busqueda" placeholder="Buscar canción...">
-<button onclick="buscarMusica()">Buscar</button>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Mi Música Premium</title>
+    <style>
+        /* Estilos modernos y modo oscuro */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 { font-size: 24px; margin-bottom: 20px; color: #1DB954; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background-color: #2a2a2a;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        button {
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover { background-color: #1ed760; }
+        #resultados {
+            text-align: left;
+            margin-bottom: 25px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .track-item {
+            padding: 10px;
+            background: #2a2a2a;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+        .track-item:hover { background: #3e3e3e; }
+        #now-playing { font-size: 14px; color: #b3b3b3; margin-bottom: 15px; }
+        audio { width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
 
-<!-- Contenedor donde aparecerán los resultados -->
-<div id="resultados"></div>
+<div class="container">
+    <h1>🎵 Mi Música</h1>
+    
+    <div class="search-box">
+        <input type="text" id="busqueda" placeholder="Artista, canción...">
+        <button onclick="buscarMusica()">Buscar</button>
+    </div>
 
-<!-- Tu reproductor actual -->
-<audio id="reproductor" controls></audio>
+    <div id="now-playing">Ninguna canción seleccionada</div>
+    <div id="resultados"></div>
+
+    <audio id="reproductor" controls></audio>
+</div>
 
 <script>
 async function buscarMusica() {
     const termino = document.getElementById('busqueda').value;
     const contenedor = document.getElementById('resultados');
-    contenedor.innerHTML = "Buscando...";
+    if(!termino) return;
+    
+    contenedor.innerHTML = "<p style='color:#b3b3b3;'>Buscando canciones...</p>";
 
     try {
-        // Ejemplo conectando a una instancia pública y libre de YouTube (Invidious)
-        const respuesta = await fetch(`https://tux.im{encodeURIComponent(termino)}&type=video`);
+        // Conexión directa a la API gratuita y legal de Jamendo Music
+        const clientId = '56d30c55'; 
+        const url = `https://jamendo.com{clientId}&format=json&limit=10&search=${encodeURIComponent(termino)}`;
+        
+        const respuesta = await fetch(url);
         const datos = await respuesta.json();
         
-        contenedor.innerHTML = ""; // Limpiar texto de carga
+        contenedor.innerHTML = ""; 
         
-        // Mostrar los primeros 5 resultados
-        datos.slice(0, 5).forEach(video => {
-            const boton = document.createElement('button');
-            boton.innerText = video.title;
+        if (datos.results.length === 0) {
+            contenedor.innerHTML = "<p style='color:#b3b3b3;'>No se encontraron resultados.</p>";
+            return;
+        }
+        
+        // Desplegar la lista de canciones encontradas
+        datos.results.forEach(cancion => {
+            const item = document.createElement('div');
+            item.className = 'track-item';
+            item.innerText = `${cancion.artist_name} - ${cancion.name}`;
             
-            // Al hacer clic, cambia la fuente del reproductor al audio del video
-            boton.onclick = () => {
+            // Acción al hacer clic sobre una canción
+            item.onclick = () => {
                 const reproductor = document.getElementById('reproductor');
-                // Enlace que extrae solo el flujo de audio libre de anuncios
-                reproductor.src = `https://tux.im{video.videoId}&itag=251`;
+                document.getElementById('now-playing').innerText = `Reproduciendo: ${cancion.artist_name} - ${cancion.name}`;
+                reproductor.src = cancion.audio; // Enlace directo al stream de audio (.mp3) libre de anuncios
                 reproductor.play();
             };
             
-            contenedor.appendChild(boton);
-            contenedor.appendChild(document.createElement('br'));
+            contenedor.appendChild(item);
         });
     } catch (error) {
-        contenedor.innerHTML = "Error al buscar la canción.";
+        contenedor.innerHTML = "<p style='color:#ff4444;'>Error en la red. Inténtalo de nuevo.</p>";
         console.error(error);
     }
 }
 </script>
+
+</body>
+</html>
