@@ -71,8 +71,7 @@
         .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .track-author { font-size: 12px; color: #aaaaaa; }
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
-        #player-container { width: 100%; margin-top: 15px; display: none; }
-        iframe { border-radius: 12px; width: 100%; height: 80px; border: none; }
+        audio { width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -88,97 +87,75 @@
     <div id="now-playing">Ninguna canción seleccionada</div>
     <div id="resultados"></div>
 
-    <!-- Contenedor del reproductor oficial invisible/reducido -->
-    <div id="player-container">
-        <div id="reproductor-youtube"></div>
-    </div>
+    <audio id="reproductor" controls></audio>
 </div>
 
 <script>
-// Cargar la API de YouTube de forma asíncrona
-var tag = document.createElement('script');
-tag.src = "https://youtube.com";
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-var player;
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('reproductor-youtube', {
-        height: '60',
-        width: '100%',
-        videoId: '',
-        playerVars: {
-            'slideshow': 0,
-            'playlist': 0,
-            'controls': 1,
-            'rel': 0,
-            'showinfo': 0,
-            'modestbranding': 1
-        }
-    });
-}
-
 async function buscarMusica() {
     const termino = document.getElementById('busqueda').value;
     const contenedor = document.getElementById('resultados');
     if(!termino) return;
     
-    contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>Buscando música...</p>";
+    contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>Buscando música en la red...</p>";
 
     try {
-        // Motor de búsqueda pública alternativo y estable sin API Key obligatoria
-        const url = `https://images${encodeURIComponent(termino)}&type=video`;
-        const respuesta = await fetch(url);
+        // Instancia pública y estable de la API de Piped/Invidious para buscar canciones en video sin anuncios
+        const url = "https://kavin.rocks" + encodeURIComponent(termino) + "&filter=videos";
         
-        // Si el motor libre falla, usamos un sistema de redirección directa seguro
-        if(!respuesta.ok) {
-            window.open(`https://youtube.com{encodeURIComponent(termino)}`, '_blank');
-            contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>Abriendo buscador integrado estable...</p>";
-            return;
-        }
-
+        const respuesta = await fetch(url);
         const datos = await respuesta.json();
+        
         contenedor.innerHTML = ""; 
         
-        if (!datos || datos.length === 0) {
-            contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>No se encontraron resultados.</p>";
+        if (!datos.streams || datos.streams.length === 0) {
+            contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>No se encontraron canciones.</p>";
             return;
         }
         
-        datos.slice(0, 8).forEach(video => {
+        // Desplegar las canciones encontradas con sus miniaturas oficiales
+        datos.streams.slice(0, 10).forEach(video => {
             const item = document.createElement('div');
             item.className = 'track-item';
             
             item.innerHTML = `
-                <img class="track-img" src="https://youtube.com{video.id}/hqdefault.jpg" alt="Portada">
+                <img class="track-img" src="${video.thumbnail}" alt="Portada">
                 <div class="track-info">
                     <div class="track-title">${video.title}</div>
-                    <div class="track-author">Video musical</div>
+                    <div class="track-author">${video.uploaderName || 'Video Musical'}</div>
                 </div>
             `;
             
-            item.onclick = () => {
-                document.getElementById('now-playing').innerText = `Reproduciendo: ${video.title}`;
-                document.getElementById('player-container').style.display = 'block';
+            // Al hacer clic, cargamos dinámicamente los enlaces directos del stream de audio libre de publicidad
+            item.onclick = async () => {
+                const reproductor = document.getElementById('reproductor');
+                document.getElementById('now-playing').innerText = "Cargando audio...";
                 
-                // Carga la canción directamente en el reproductor oficial
-                if (player && player.loadVideoById) {
-                    player.loadVideoById(video.id);
-                } else {
-                    // Alternativa directa si la API tarda en inicializar
-                    document.getElementById('player-container').innerHTML = `<iframe src="https://youtube.com{video.id}?autoplay=1&modestbranding=1" allow="autoplay"></iframe>`;
+                try {
+                    const videoId = video.url.split("v=")[1];
+                    const resAudio = await fetch("https://kavin.rocks" + videoId);
+                    const datosAudio = await resAudio.json();
+                    
+                    // Seleccionar preferiblemente solo el flujo de audio (ahorra datos y reproduce rápido sin video)
+                    const audioStream = datosAudio.audioStreams.find(stream => stream.mimeType.includes('audio')) || datosAudio.audioStreams[0];
+                    
+                    if(audioStream && audioStream.url) {
+                        document.getElementById('now-playing').innerText = "Reproduciendo: " + video.title;
+                        reproductor.src = audioStream.url;
+                        reproductor.play();
+                    } else {
+                        document.getElementById('now-playing').innerText = "No se pudo obtener el audio directo.";
+                    }
+                } catch (e) {
+                    document.getElementById('now-playing').innerText = "Error al conectar con la pista.";
+                    console.error(e);
                 }
             };
             
             contenedor.appendChild(item);
         });
     } catch (error) {
-        // Plan de respaldo automático: Si las restricciones de red bloquean el script, busca mediante la plataforma oficial directamente
-        contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>Conectando de forma directa y estable...</p>";
-        setTimeout(() => {
-            // Reemplaza el visor por un buscador embebido directo para saltar bloqueos de GitHub
-            contenedor.innerHTML = `<iframe src="https://youtube.com{encodeURIComponent(termino)}&modestbranding=1" style="height:300px;"></iframe>`;
-        }, 500);
+        contenedor.innerHTML = "<p style='color:#ff4444; text-align:center;'>Servidor saturado. Intenta buscar de nuevo.</p>";
+        console.error(error);
     }
 }
 </script>
