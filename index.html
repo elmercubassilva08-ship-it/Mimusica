@@ -2,152 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Música Sin Anuncios</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 { text-align: center; color: #1DB954; font-size: 24px; }
-        .search-box { display: flex; margin-bottom: 20px; }
-        input {
-            flex: 1; padding: 12px; border: none;
-            border-radius: 20px 0 0 20px; background-color: #282828;
-            color: white; font-size: 16px; outline: none;
-        }
-        button {
-            padding: 12px 20px; border: none;
-            border-radius: 0 20px 20px 0; background-color: #1DB954;
-            color: white; font-weight: bold; cursor: pointer;
-        }
-        #results { margin-bottom: 220px; }
-        .song-item {
-            display: flex; align-items: center; padding: 10px;
-            margin-bottom: 10px; background-color: #181818;
-            border-radius: 8px; cursor: pointer;
-        }
-        .song-item img {
-            width: 50px; height: 50px; object-fit: cover;
-            border-radius: 4px; margin-right: 15px;
-        }
-        .song-info { flex: 1; }
-        .song-title { font-weight: bold; font-size: 14px; margin-bottom: 4px; }
-        .song-author { color: #b3b3b3; font-size: 12px; }
-        
-        .player-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background-color: #282828; padding: 15px;
-            display: flex; flex-direction: column; align-items: center;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-        }
-        #current-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #1DB954; }
-        /* El contenedor de video oficial que desbloquea los permisos de sonido en Android */
-        iframe { width: 100%; max-width: 360px; height: 60px; border: none; border-radius: 4px; }
-    </style>
+    <title>Mi Música</title>
+    <link rel="stylesheet" href="style.css"> <!-- Tu archivo CSS -->
 </head>
 <body>
 
-    <h1>🎵 Mi Música</h1>
-    
-    <div class="search-box">
-        <input type="text" id="query" placeholder="Busca: Mana, Pop, Rock o Éxitos...">
-        <button id="search-btn">Buscar</button>
+    <div class="app-container">
+        <h2>🎵 Mi Música</h2>
+        
+        <!-- Barra de búsqueda -->
+        <div class="search-box">
+            <input type="text" id="inputBuscar" placeholder="Buscar artista o canción..." value="Maná">
+            <button id="btnBuscar">Buscar</button>
+        </div>
+
+        <!-- Lista donde se cargarán las canciones dinámicamente -->
+        <div id="listaCanciones" class="songs-list">
+            <!-- JavaScript meterá las canciones aquí -->
+        </div>
+
+        <!-- Reproductor inferior fijo -->
+        <div class="player-footer">
+            <p id="textoReproduciendo">Ninguna canción seleccionada</p>
+            <!-- Elemento de audio nativo del navegador -->
+            <audio id="reproductorAudio" controls autoplay></audio>
+        </div>
     </div>
 
-    <div id="results"></div>
-
-    <div class="player-bar">
-        <div id="current-title">Ninguna canción seleccionada</div>
-        <!-- El reproductor incrustado nativo que obliga a Chrome a reproducir el sonido -->
-        <iframe id="youtube-player" src=""></iframe>
-    </div>
-
-    <script>
-        const searchBtn = document.getElementById('search-btn');
-        const queryInput = document.getElementById('query');
-        const resultsDiv = document.getElementById('results');
-        const currentTitle = document.getElementById('current-title');
-        const youtubePlayer = document.getElementById('youtube-player');
-
-        // Catálogo musical integrado con IDs de video de YouTube estables y reproducibles
-        const baseDeDatosMusical = [
-            {
-                titulo: "Labios Compartidos",
-                artista: "Maná",
-                portada: "https://wikimedia.org",
-                youtubeId: "v_E_S9f0jsw"
-            },
-            {
-                titulo: "Clavado En Un Bar",
-                artista: "Maná",
-                portada: "https://wikimedia.org",
-                youtubeId: "tkS3S9AWhwE"
-            },
-            {
-                titulo: "En El Muelle De San Blas",
-                artista: "Maná",
-                portada: "https://wikimedia.org",
-                youtubeId: "teprNzF60Tg"
-            },
-            {
-                titulo: "Éxitos Pop 2026",
-                artista: "Mix en Vivo",
-                portada: "https://unsplash.com",
-                youtubeId: "5qap5aO4i9A"
-            }
-        ];
-
-        searchBtn.addEventListener('click', searchMusic);
-        queryInput.addEventListener('keypress', function(e) { 
-            if (e.key === 'Enter') searchMusic(); 
-        });
-
-        function searchMusic() {
-            const query = queryInput.value.trim().toLowerCase();
-            if (!query) return;
-
-            resultsDiv.innerHTML = '<p style="text-align:center;">Buscando...</p>';
-
-            const cancionesEncontradas = baseDeDatosMusical.filter(function(item) {
-                return item.titulo.toLowerCase().includes(query) || item.artista.toLowerCase().includes(query);
-            });
-
-            setTimeout(function() {
-                resultsDiv.innerHTML = '';
-                
-                if (cancionesEncontradas.length === 0) {
-                    resultsDiv.innerHTML = '<p style="text-align:center;">Prueba buscando: Mana o Pop</p>';
-                    return;
-                }
-
-                cancionesEncontradas.forEach(function(song) {
-                    const songItem = document.createElement('div');
-                    songItem.className = 'song-item';
-                    
-                    songItem.innerHTML = '<img src="' + song.portada + '" alt="Portada">' +
-                        '<div class="song-info">' +
-                            '<div class="song-title">' + song.titulo + '</div>' +
-                            '<div class="song-author">' + song.artista + '</div>' +
-                        '</div>';
-                    
-                    songItem.addEventListener('click', function() {
-                        currentTitle.textContent = 'Cargando reproductor oficial...';
-                        
-                        // Cargamos el stream directamente en el componente visual nativo de YouTube
-                        // Usamos los comandos para ocultar anuncios y controles visuales molestos
-                        youtubePlayer.src = 'https://youtube.com' + song.youtubeId + '?autoplay=1&controls=1&modestbranding=1&rel=0';
-                        
-                        currentTitle.textContent = 'Escuchando: ' + song.titulo;
-                    });
-                    
-                    resultsDiv.appendChild(songItem);
-                });
-            }, 200);
-        }
-    </script>
+    <!-- Tu archivo de lógica JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
