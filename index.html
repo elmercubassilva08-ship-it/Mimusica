@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎵 Mi Música Premium</title>
+    <title>🎵 Mi Música Global</title>
     <style>
-        /* Estilos modernos y modo oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
+            background-color: #0f0f0f;
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -19,55 +18,60 @@
             padding: 20px;
         }
         .container {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            background-color: #1f1f1f;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
         }
-        h1 { font-size: 24px; margin-bottom: 20px; color: #1DB954; }
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        h1 { font-size: 26px; margin-bottom: 20px; color: #ff0000; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
         input {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 25px;
-            background-color: #2a2a2a;
+            border-radius: 30px;
+            background-color: #2f2f2f;
             color: white;
             font-size: 16px;
             outline: none;
         }
         button {
-            background-color: #1DB954;
+            background-color: #ff0000;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
+            padding: 14px 28px;
+            border-radius: 30px;
             cursor: pointer;
             font-weight: bold;
             transition: 0.3s;
         }
-        button:hover { background-color: #1ed760; }
+        button:hover { background-color: #cc0000; }
         #resultados {
             text-align: left;
             margin-bottom: 25px;
-            max-height: 200px;
+            max-height: 280px;
             overflow-y: auto;
         }
         .track-item {
-            padding: 10px;
-            background: #2a2a2a;
-            margin: 5px 0;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #2f2f2f;
+            margin: 8px 0;
+            border-radius: 12px;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 14px;
         }
-        .track-item:hover { background: #3e3e3e; }
-        #now-playing { font-size: 14px; color: #b3b3b3; margin-bottom: 15px; }
-        audio { width: 100%; margin-top: 10px; }
+        .track-item:hover { background: #3f3f3f; }
+        .track-img { width: 50px; height: 50px; border-radius: 6px; margin-right: 12px; object-fit: cover; }
+        .track-info { flex: 1; overflow: hidden; }
+        .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-author { font-size: 12px; color: #aaaaaa; }
+        #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
+        audio { width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -76,7 +80,7 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Artista, canción...">
+        <input type="text" id="busqueda" placeholder="Busca cualquier canción o artista...">
         <button onclick="buscarMusica()">Buscar</button>
     </div>
 
@@ -92,41 +96,66 @@ async function buscarMusica() {
     const contenedor = document.getElementById('resultados');
     if(!termino) return;
     
-    contenedor.innerHTML = "<p style='color:#b3b3b3;'>Buscando canciones...</p>";
+    contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>Buscando en la base de datos global...</p>";
 
     try {
-        // Conexión directa a la API gratuita y legal de Jamendo Music
-        const clientId = '56d30c55'; 
-        const url = `https://jamendo.com{clientId}&format=json&limit=10&search=${encodeURIComponent(termino)}`;
+        // Usamos una instancia pública de Piped (un buscador de YouTube libre de rastreadores y anuncios)
+        const url = `https://kavin.rocks{encodeURIComponent(termino)}&filter=videos`;
         
         const respuesta = await fetch(url);
         const datos = await respuesta.json();
         
         contenedor.innerHTML = ""; 
         
-        if (datos.results.length === 0) {
-            contenedor.innerHTML = "<p style='color:#b3b3b3;'>No se encontraron resultados.</p>";
+        if (!datos.streams || datos.streams.length === 0) {
+            contenedor.innerHTML = "<p style='color:#aaaaaa; text-align:center;'>No se encontraron resultados.</p>";
             return;
         }
         
-        // Desplegar la lista de canciones encontradas
-        datos.results.forEach(cancion => {
+        // Filtramos y mostramos los resultados musicales
+        datos.streams.forEach(video => {
             const item = document.createElement('div');
             item.className = 'track-item';
-            item.innerText = `${cancion.artist_name} - ${cancion.name}`;
             
-            // Acción al hacer clic sobre una canción
-            item.onclick = () => {
+            // Estructura visual con la miniatura del video/canción
+            item.innerHTML = `
+                <img class="track-img" src="${video.thumbnail}" alt="Portada">
+                <div class="track-info">
+                    <div class="track-title">${video.title}</div>
+                    <div class="track-author">${video.uploaderName}</div>
+                </div>
+            `;
+            
+            // Al hacer clic, extrae directamente el flujo de audio limpio
+            item.onclick = async () => {
                 const reproductor = document.getElementById('reproductor');
-                document.getElementById('now-playing').innerText = `Reproduciendo: ${cancion.artist_name} - ${cancion.name}`;
-                reproductor.src = cancion.audio; // Enlace directo al stream de audio (.mp3) libre de anuncios
-                reproductor.play();
+                document.getElementById('now-playing').innerText = `Cargando audio: ${video.title}`;
+                
+                try {
+                    // Consultamos los enlaces directos del video
+                    const resAudio = await fetch(`https://kavin.rocks{video.url.split('=')[1]}`);
+                    const datosAudio = await resAudio.json();
+                    
+                    // Buscamos un formato que sea solo de audio (m4a o webm) para ahorrar datos y cargar rápido
+                    const audioStream = datosAudio.audioStreams.find(stream => stream.mimeType.includes('audio')) || datosAudio.audioStreams[0];
+                    
+                    if(audioStream && audioStream.url) {
+                        document.getElementById('now-playing').innerText = `Reproduciendo: ${video.title}`;
+                        reproductor.src = audioStream.url;
+                        reproductor.play();
+                    } else {
+                        document.getElementById('now-playing').innerText = "Error al obtener el audio de esta canción.";
+                    }
+                } catch (e) {
+                    document.getElementById('now-playing').innerText = "Servidor ocupado. Intenta con otra canción.";
+                    console.error(e);
+                }
             };
             
             contenedor.appendChild(item);
         });
     } catch (error) {
-        contenedor.innerHTML = "<p style='color:#ff4444;'>Error en la red. Inténtalo de nuevo.</p>";
+        contenedor.innerHTML = "<p style='color:#ff4444; text-align:center;'>Error de conexión. Inténtalo de nuevo.</p>";
         console.error(error);
     }
 }
