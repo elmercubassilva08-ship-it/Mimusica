@@ -1,36 +1,45 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Mi Música</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Tu archivo CSS -->
-</head>
-<body>
+<!-- Tu barra de búsqueda actual -->
+<input type="text" id="busqueda" placeholder="Buscar canción...">
+<button onclick="buscarMusica()">Buscar</button>
 
-    <div class="app-container">
-        <h2>🎵 Mi Música</h2>
+<!-- Contenedor donde aparecerán los resultados -->
+<div id="resultados"></div>
+
+<!-- Tu reproductor actual -->
+<audio id="reproductor" controls></audio>
+
+<script>
+async function buscarMusica() {
+    const termino = document.getElementById('busqueda').value;
+    const contenedor = document.getElementById('resultados');
+    contenedor.innerHTML = "Buscando...";
+
+    try {
+        // Ejemplo conectando a una instancia pública y libre de YouTube (Invidious)
+        const respuesta = await fetch(`https://tux.im{encodeURIComponent(termino)}&type=video`);
+        const datos = await respuesta.json();
         
-        <!-- Barra de búsqueda -->
-        <div class="search-box">
-            <input type="text" id="inputBuscar" placeholder="Buscar artista o canción..." value="Maná">
-            <button id="btnBuscar">Buscar</button>
-        </div>
-
-        <!-- Lista donde se cargarán las canciones dinámicamente -->
-        <div id="listaCanciones" class="songs-list">
-            <!-- JavaScript meterá las canciones aquí -->
-        </div>
-
-        <!-- Reproductor inferior fijo -->
-        <div class="player-footer">
-            <p id="textoReproduciendo">Ninguna canción seleccionada</p>
-            <!-- Elemento de audio nativo del navegador -->
-            <audio id="reproductorAudio" controls autoplay></audio>
-        </div>
-    </div>
-
-    <!-- Tu archivo de lógica JavaScript -->
-    <script src="script.js"></script>
-</body>
-</html>
+        contenedor.innerHTML = ""; // Limpiar texto de carga
+        
+        // Mostrar los primeros 5 resultados
+        datos.slice(0, 5).forEach(video => {
+            const boton = document.createElement('button');
+            boton.innerText = video.title;
+            
+            // Al hacer clic, cambia la fuente del reproductor al audio del video
+            boton.onclick = () => {
+                const reproductor = document.getElementById('reproductor');
+                // Enlace que extrae solo el flujo de audio libre de anuncios
+                reproductor.src = `https://tux.im{video.videoId}&itag=251`;
+                reproductor.play();
+            };
+            
+            contenedor.appendChild(boton);
+            contenedor.appendChild(document.createElement('br'));
+        });
+    } catch (error) {
+        contenedor.innerHTML = "Error al buscar la canción.";
+        console.error(error);
+    }
+}
+</script>
