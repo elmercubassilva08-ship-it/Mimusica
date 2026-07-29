@@ -1,82 +1,131 @@
-// Referencias a los elementos del HTML
-const inputBuscar = document.getElementById('inputBuscar');
-const btnBuscar = document.getElementById('btnBuscar');
-const listaCanciones = document.getElementById('listaCanciones');
-const reproductorAudio = document.getElementById('reproductorAudio');
-const textoReproduciendo = document.getElementById('textoReproduciendo');
-
-// Función principal para buscar música en internet usando una API proxy de Deezer
-async function buscarMusica(termino) {
-    if (!termino.trim()) return;
-
-    // Limpiamos la lista y mostramos un mensaje de carga
-    listaCanciones.innerHTML = '<p class="mensaje">Buscando...</p>';
-
-    try {
-        // Usamos un proxy público para evitar problemas de CORS al desarrollar en GitHub Pages
-        const url = `https://corsproxy.io{encodeURIComponent(`https://deezer.com{termino}`)}`;
-        
-        const respuesta = await fetch(url);
-        const datos = await respuesta.json();
-
-        // Validamos si la API devolvió canciones
-        if (!datos.data || datos.data.length === 0) {
-            listaCanciones.innerHTML = '<p class="mensaje">No se encontraron resultados.</p>';
-            return;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Música</title>
+    <style>
+        /* Estilos visuales integrados para el diseño oscuro y verde */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
         }
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #1DB954;
+            text-align: center;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #inputBuscar {
+            flex: 1;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            background-color: #282828;
+            color: white;
+        }
+        #btnBuscar {
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .songs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 120px;
+        }
+        .song-item {
+            display: flex;
+            align-items: center;
+            background-color: #181818;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .song-item:hover {
+            background-color: #282828;
+        }
+        .song-cover {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+        .song-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .song-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .song-artist {
+            color: #b3b3b3;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .player-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #282828;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #1DB954;
+        }
+        #textoReproduciendo {
+            color: #1DB954;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        audio {
+            width: 100%;
+            max-width: 400px;
+        }
+        .mensaje {
+            text-align: center;
+            color: #b3b3b3;
+        }
+    </style>
+</head>
+<body>
 
-        // Limpiamos el mensaje de carga para poner los resultados reales
-        listaCanciones.innerHTML = '';
+    <div class="app-container">
+        <h2>🎵 Mi Música</h2>
+        
+        <div class="search-box">
+            <input type="text" id="inputBuscar" placeholder="Buscar artista o canción..." value="Maná">
+            <button id="btnBuscar">Buscar</button>
+        </div>
 
-        // Recorremos las canciones encontradas (máximo 10 resultados)
-        datos.data.slice(0, 10).forEach(cancion => {
+        <div id="listaCanciones" class="songs-list"></div>
+
+        <div class="player-footer">
+            <p id="textoReproduciendo">Ninguna canción seleccionada</p>
+            <audio id="reproductorAudio" controls autoplay></audio>
+        </div>
+    </div>
+
+    <!-- Enlace al archivo de lógica -->
+    <script src="script.js"></script>
+</body>
+</html>
             
-            // Creamos el contenedor de la canción
-            const tarjetaCancion = document.createElement('div');
-            tarjetaCancion.className = 'song-item';
-            
-            // Insertamos la estructura con los datos reales obtenidos de internet
-            tarjetaCancion.innerHTML = `
-                <img src="${cancion.album.cover_medium}" alt="Portada de ${cancion.title}" class="song-cover">
-                <div class="song-info">
-                    <span class="song-title">${cancion.title}</span>
-                    <span class="song-artist">${cancion.artist.name}</span>
-                </div>
-            `;
-
-            // Evento: Al hacer clic en la canción, se reproduce en la barra inferior
-            tarjetaCancion.addEventListener('click', () => {
-                // cancion.preview contiene el enlace directo al archivo .mp3 de 30 segundos
-                reproductorAudio.src = cancion.preview; 
-                reproductorAudio.play();
-                
-                // Actualizamos el texto del reproductor inferior
-                textoReproduciendo.textContent = `Escuchando: ${cancion.title} - ${cancion.artist.name}`;
-            });
-
-            // Agregamos la tarjeta a la lista visible en pantalla
-            listaCanciones.appendChild(tarjetaCancion);
-        });
-
-    } catch (error) {
-        console.error("Error al obtener la música:", error);
-        listaCanciones.innerHTML = '<p class="mensaje" style="color: red;">Error de conexión. Inténtalo de nuevo.</p>';
-    }
-}
-
-// Escuchar el clic en el botón de buscar
-btnBuscar.addEventListener('click', () => {
-    buscarMusica(inputBuscar.value);
-});
-
-// Escuchar la tecla "Enter" en el campo de texto
-inputBuscar.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        buscarMusica(inputBuscar.value);
-    }
-});
-
-// Cargar una búsqueda inicial al abrir la página (por ejemplo: Maná)
-window.addEventListener('DOMContentLoaded', () => {
-    buscarMusica('Maná');
-});
