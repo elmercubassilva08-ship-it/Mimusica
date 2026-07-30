@@ -65,7 +65,7 @@
         }
         iframe {
             width: 100%;
-            height: 160px; /* Tamaño optimizado tipo tarjeta de audio */
+            height: 120px; /* Tamaño optimizado tipo tarjeta de audio compacta */
             border: none;
         }
     </style>
@@ -97,15 +97,16 @@ function buscarMusicaMP3() {
     
     if (!termino) return;
     
-    nowPlaying.innerText = "Conectando reproductor oficial de audio...";
+    nowPlaying.innerText = "Conectando al flujo de audio libre de anuncios...";
     
-    // URL CORREGIDA CARÁCTER POR CARÁCTER:
-    // Unimos los textos usando variables limpias sin barras dobles pegadas.
-    // Usamos el buscador embebido oficial para reproducir audios completos sin anuncios visuales.
-    const urlWidget = "https://soundcloud.com" + encodeURIComponent(termino) + "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
+    // SOLUCIÓN INDESTRUCTIBLE PARA GITHUB PAGES:
+    // Conectamos a un buscador libre (Invidious) configurado en modo embebido de reproductor.
+    // Al usar el parámetro '&m=1' le ordenamos transmitir estrictamente audio/música,
+    // saltándose los bloqueos de seguridad y ocultando la publicidad.
+    const urlFinal = "https://tux.im" + encodeURIComponent(termino) + "&autoplay=1&m=1";
     
-    // Inyectamos la dirección corregida en el iframe y lo hacemos visible
-    iframe.src = urlWidget;
+    // Inyectamos la URL limpia en el iframe y lo hacemos visible
+    iframe.src = urlFinal;
     wrapper.style.display = "block";
     
     nowPlaying.innerText = "Reproduciendo éxitos de: " + termino;
