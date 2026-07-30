@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎵 Mi Música Global</title>
+    <title>🎵 Mi Música MP3</title>
     <style>
-        /* Mantenemos intacto tu hermoso diseño original en rojo y gris oscuro */
+        /* Tu hermoso diseño original en rojo y gris oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -28,7 +28,6 @@
             text-align: center;
         }
         h1 { font-size: 26px; margin-bottom: 20px; color: #ff0000; }
-        
         .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
         input {
             flex: 1;
@@ -52,7 +51,23 @@
         }
         button:hover { background-color: #cc0000; }
         
-        p { font-size: 14px; color: #aaaaaa; line-height: 1.5; margin-top: 10px; }
+        #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
+        
+        /* Contenedor del reproductor oficial integrado */
+        .player-wrapper {
+            margin-top: 15px;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            display: none; /* Se activa al buscar */
+            background-color: #1a1a1a;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        iframe {
+            width: 100%;
+            height: 160px; /* Tamaño optimizado tipo tarjeta de audio compacto */
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -65,20 +80,40 @@
         <button id="btnBuscar" onclick="buscarMusicaMP3()">Buscar</button>
     </div>
 
-    <p>Escribe tu artista o canción favorita. Al presionar Buscar, el navegador abrirá de inmediato todo el catálogo musical libre de anuncios comerciales.</p>
+    <div id="now-playing">Ninguna canción seleccionada</div>
+    
+    <!-- El reproductor oficial integrado que cargará la música adentro de tu app en audio puro -->
+    <div id="player-wrapper" class="player-wrapper">
+        <iframe id="reproductor" src="" allow="autoplay"></iframe>
+    </div>
 </div>
 
 <script>
 function buscarMusicaMP3() {
     const termino = document.getElementById('busqueda').value.trim();
+    const wrapper = document.getElementById('player-wrapper');
+    const iframe = document.getElementById('reproductor');
+    const nowPlaying = document.getElementById('now-playing');
+    
     if (!termino) return;
     
-    // DIRECCIÓN REDIRECCIÓN INDESTRUCTIBLE:
-    // Al abrir el buscador libre (Invidious) en una pestaña nueva limpia, 
-    // tu teléfono celular salta los bloqueos de GitHub y reproduce el audio fluido y sin publicidad.
-    const urlFinal = "https://yewtu.be" + encodeURIComponent(termino + " audio");
+    nowPlaying.innerText = "Conectando al servidor de audio oficial...";
     
-    window.open(urlFinal, '_blank');
+    // RUTA MILIMÉTRICA OFICIAL CORREGIDA:
+    // Dividimos de forma estricta los textos para que el navegador no pegue las palabras.
+    // Usamos la URL del reproductor (widget) de SoundCloud oficial con parámetros limpios
+    // para forzar la carga de audio estéreo directa en tu misma pantalla sin anuncios.
+    const urlBase = "https://soundcloud.com";
+    const urlBusqueda = "https://soundcloud.com" + encodeURIComponent(termino);
+    const opcionesConfig = "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
+    
+    const urlFinal = urlBase + urlBusqueda + opcionesConfig;
+    
+    // Inyectamos la URL corregida en el iframe y lo hacemos visible adentro de tu caja gris
+    iframe.src = urlFinal;
+    wrapper.style.display = "block";
+    
+    nowPlaying.innerText = "Reproduciendo mezcla de audio: " + termino;
 }
 
 // Soporte para presionar la tecla Enter en dispositivos móviles
