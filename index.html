@@ -97,7 +97,8 @@
         <h1>🎵 Mi Música</h1>
 
         <div class="search-box">
-            <input type="text" id="inputBusqueda" placeholder="Mar de copas" value="Mar de copas">
+            <!-- Quitamos el atributo 'value' para que el buscador inicie limpio y vacío -->
+            <input type="text" id="inputBusqueda" placeholder="Escribe un artista o canción...">
             <button id="botonBuscar">Buscar</button>
         </div>
 
@@ -106,7 +107,6 @@
             <p id="textoError" class="error-text"></p>
         </div>
 
-        <!-- El reproductor de audio blanco inferior -->
         <audio id="reproductorAudio" controls></audio>
     </div>
 
@@ -117,80 +117,58 @@
         const textoEstado = document.getElementById('textoEstado');
         const textoError = document.getElementById('textoError');
 
-        botonBuscar.addEventListener('click', buscarMusicaReal);
+        // Asignamos la función correctamente sin ejecutarla de inmediato
+        botonBuscar.addEventListener('click', buscarMusicaApple);
         inputBusqueda.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') buscarMusicaReal();
+            if (e.key === 'Enter') buscarMusicaApple();
         });
 
-        function buscarMusicaReal() {
+        function buscarMusicaApple() {
             const termino = inputBusqueda.value.trim();
-            if (termino === "") return;
+            
+            // Si el usuario presiona buscar con el cuadro vacío, no hace nada
+            if (termino === "") {
+                textoEstado.textContent = "Por favor, escribe algo para buscar.";
+                return;
+            }
 
-            // Limpiar la pantalla de errores previos
+            // Limpiar estados visuales
             textoError.style.display = 'none';
             textoError.textContent = '';
-            textoEstado.textContent = "Buscando canción en servidores...";
+            textoEstado.textContent = "Buscando pista en línea...";
 
-            // REPARACIÓN COMPLETA DE LA URL: Añadida la ruta /advancedsearch.php?q=
-            const urlAPI = `https://archive.org{encodeURIComponent(termino)}+AND+mediatype:audio&fl[]=identifier,title&output=json`;
+            // API global de iTunes: ultra rápida, sin anuncios y 100% compatible con HTTPS/CORS
+            const urlAPI = `https://apple.com{encodeURIComponent(termino)}&media=music&limit=1`;
 
             fetch(urlAPI)
                 .then(response => {
-                    if (!response.ok) throw new Error("Servidor ocupado o caído. Inténtalo más tarde.");
+                    if (!response.ok) throw new Error("Error al conectar con el servidor de música.");
                     return response.json();
                 })
                 .then(data => {
-                    // Validar si el servidor de Archive.org respondió con datos correctos
-                    if (!data.response || !data.response.docs || data.response.docs.length === 0) {
-                        throw new Error("No se encontraron resultados para esta búsqueda.");
+                    if (!data.results || data.results.length === 0) {
+                        throw new Error("No se encontraron canciones para esta búsqueda.");
                     }
 
-                    const solicitudes = data.response.docs;
-                    const itemValido = solicitudes[0]; // Tomamos el primer contenedor de música
-                    const idContenedor = itemValido.identifier;
-                    const tituloCancion = itemValido.title || termino;
-
-                    textoEstado.textContent = `Conectando pista: ${tituloCancion}`;
-
-                    // REPARACIÓN: Ruta correcta /metadata/ para obtener la lista de archivos mp3 del álbum
-                    return fetch(`https://archive.org{idContenedor}`);
-                })
-                .then(response => {
-                    if (!response) return;
-                    return response.json();
-                })
-                .then(metaData => {
-                    if (!metaData || !metaData.files) return;
-
-                    // Filtrar los archivos que terminen en .mp3 para que el reproductor los entienda
-                    const archivosMp3 = metaData.files.filter(f => f.name.toLowerCase().endsWith('.mp3'));
-
-                    if (archivosMp3.length === 0) {
-                        throw new Error("La canción encontrada no tiene un formato compatible (.mp3).");
-                    }
-
-                    // Tomamos la primera pista de audio encontrada
-                    const nombreArchivo = archivosMp3[0].name;
+                    const cancion = data.results[0];
                     
-                    // REPARACIÓN: Ruta de descarga directa /download/
-                    const urlStreamingDirecto = `https://archive.org{metaData.metadata.identifier}/${encodeURIComponent(nombreArchivo)}`;
+                    // Actualizar textos con el resultado real encontrado
+                    textoEstado.textContent = `Reproduciendo: ${cancion.trackName} - ${cancion.artistName}`;
 
-                    // Inyectar el archivo de música real en la etiqueta audio
-                    reproductorAudio.src = urlStreamingDirecto;
-                    textoEstado.textContent = `Reproduciendo: ${metaData.metadata.title || "Audio En Línea"}`;
+                    // Asignar el enlace de audio directo (.m4a/.mp3) al reproductor nativo
+                    reproductorAudio.src = cancion.previewUrl;
                     
-                    // Reproducir pista automáticamente
+                    // Forzar reproducción
                     reproductorAudio.play().catch(err => {
-                        textoEstado.textContent = "Canción cargada. Presiona Play.";
-                        console.log("El navegador bloqueó la reproducción automática. Se requiere interacción del usuario.");
+                        console.log("Reproducción automática pausada. Requiere clic en Play.");
                     });
                 })
                 .catch(error => {
-                    console.error("Error del sistema:", error);
-                    textoEstado.textContent = "Error de conexión.";
+                    console.error("Error detectado:", error);
+                    textoEstado.textContent = "";
                     
                     if (error.message.includes('Failed to fetch')) {
-                        mostrarError("Error en la red. Comprueba tu conexión a internet.");
+                        mostrarError("Error en la red. Verifica tu conexión a internet.");
                     } else {
                         mostrarError(error.message);
                     }
