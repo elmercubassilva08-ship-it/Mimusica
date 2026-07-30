@@ -97,7 +97,7 @@
         <h1>🎵 Mi Música</h1>
 
         <div class="search-box">
-            <input type="text" id="inputBusqueda" placeholder="Andrés Calamaro, Mana, Rock...">
+            <input type="text" id="inputBusqueda" placeholder="Busca un género, artista o canción...">
             <button id="botonBuscar">Buscar</button>
         </div>
 
@@ -116,22 +116,22 @@
         const textoEstado = document.getElementById('textoEstado');
         const textoError = document.getElementById('textoError');
 
-        botonBuscar.addEventListener('click', buscarEnBaseMundial);
+        botonBuscar.addEventListener('click', buscarMusicaReal);
         inputBusqueda.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') buscarEnBaseMundial();
+            if (e.key === 'Enter') buscarMusicaReal();
         });
 
-        function buscarEnBaseMundial() {
+        function buscarMusicaReal() {
             const termino = inputBusqueda.value.trim();
             if (termino === "") return;
 
-            // Limpiar estados e indicar al usuario que el buscador está activo
+            // Limpiar avisos y errores viejos
             textoError.style.display = 'none';
             textoError.textContent = '';
-            textoEstado.textContent = "Conectando con la base de datos mundial...";
+            textoEstado.textContent = "Buscando canción en la base de datos pública...";
 
-            // API Abierta de Wikimedia Commons: Filtra búsquedas reales de archivos de audio
-            const urlAPI = 'https://wikimedia.org' + encodeURIComponent(termino) + ' fileext:mp3|ogg&srnamespace=6&format=json&origin=*';
+            // API oficial y abierta de Jamendo (Cliente de pruebas libre con HTTPS y CORS habilitados de fábrica)
+            const urlAPI = 'https://jamendo.com' + encodeURIComponent(termino);
 
             fetch(urlAPI)
                 .then(response => {
@@ -139,54 +139,31 @@
                     return response.json();
                 })
                 .then(data => {
-                    if (!data.query || !data.query.search || data.query.search.length === 0) {
+                    // Validar la estructura de la respuesta
+                    if (!data.results || data.results.length === 0) {
                         throw new Error("No se encontraron canciones para esta búsqueda.");
                     }
 
-                    // Tomamos el primer archivo multimedia válido encontrado en el servidor externo
-                    const primerResultado = data.query.search[0];
-                    const tituloArchivo = primerResultado.title; // Formato: "File:Nombre.mp3"
-
-                    // Limpiar el prefijo técnico para mostrar el nombre real en tu app
-                    const nombreLimpio = tituloArchivo.replace("File:", "").replace(".mp3", "").replace(".ogg", "");
-                    textoEstado.textContent = "Cargando audio: " + nombreLimpio;
-
-                    // Convertir el nombre del archivo de la base de datos en una URL de descarga directa compatible con HTTPS
-                    const nombreEncriptado = encodeURIComponent(tituloArchivo.replace("File:", ""));
+                    const cancionEncontrada = data.results[0];
                     
-                    // MD5 hashing simplificado para las rutas de archivos de Wikimedia
-                    return fetch('https://wikimedia.org' + tituloArchivo + '&prop=imageinfo&iiprop=url&format=json&origin=*');
-                })
-                .then(response => {
-                    if (!response) return;
-                    return response.json();
-                })
-                .then(infoData => {
-                    const paginas = infoData.query.pages;
-                    const idPagina = Object.keys(paginas)[0];
-                    const infoMultimedia = paginas[idPagina].imageinfo;
+                    // Mostrar los datos reales de la canción en pantalla
+                    textoEstado.textContent = "Reproduciendo: " + cancionEncontrada.name + " - " + cancionEncontrada.artist_name;
 
-                    if (!infoMultimedia || infoMultimedia.length === 0) {
-                        throw new Error("El archivo seleccionado no tiene permisos de reproducción.");
-                    }
+                    // Forzar que el archivo de sonido use conexión segura HTTPS obligatoria para GitHub Pages
+                    const urlAudioSegura = cancionEncontrada.audio.replace(/^http:\/\//i, 'https://');
 
-                    // Capturamos el enlace de streaming directo HTTPS que el navegador jamás bloqueará
-                    const urlStreamingDirecto = infoMultimedia[0].url;
-
-                    // Pasar la ruta al reproductor nativo del celular
-                    reproductorAudio.src = urlStreamingDirecto;
+                    // Inyectar el archivo MP3 directo en el reproductor blanco inferior
+                    reproductorAudio.src = urlAudioSegura;
                     reproductorAudio.load();
                     
-                    textoEstado.textContent = "Reproduciendo pista en línea.";
-
-                    // Forzar el inicio del audio de forma interactiva
+                    // Iniciar la música automáticamente
                     reproductorAudio.play().catch(err => {
-                        textoEstado.textContent = "Canción lista. Presiona el botón de Play blanco.";
-                        console.log("Autoplay bloqueado. El usuario debe pulsar manualmente en el celular.");
+                        textoEstado.textContent = "Canción cargada. Presiona el botón Play blanco.";
+                        console.log("El navegador del celular requiere que el usuario presione play manualmente.");
                     });
                 })
                 .catch(error => {
-                    console.error("Falla en el flujo:", error);
+                    console.error("Error detectado en el flujo:", error);
                     textoEstado.textContent = "";
                     mostrarError(error.message || "Error en la red. Inténtalo de nuevo.");
                 });
