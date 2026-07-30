@@ -60,12 +60,12 @@
             border-radius: 15px;
             overflow: hidden;
             display: none; /* Se activa al buscar */
-            background-color: #000000;
+            background-color: #1a1a1a;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         iframe {
             width: 100%;
-            height: 150px; /* Tamaño tipo barra de sonido */
+            height: 160px; /* Tamaño optimizado tipo tarjeta de audio */
             border: none;
         }
     </style>
@@ -97,21 +97,18 @@ function buscarMusicaMP3() {
     
     if (!termino) return;
     
-    nowPlaying.innerText = "Conectando con el servidor de audio seguro...";
+    nowPlaying.innerText = "Conectando reproductor oficial de audio...";
     
-    // CONEXIÓN SEGURA INDESTRUCTIBLE:
-    // Concatenamos de forma nativa la ruta del Widget oficial de SoundCloud con los parámetros de búsqueda.
-    // Esto arma una lista de reproducción de audio instantánea adaptada a tu caja gris, libre de anuncios visuales.
-    const urlBase = "https://soundcloud.com";
-    const opcionesExtras = "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
+    // DIRECCIÓN MAESTRA OFICIAL CORREGIDA:
+    // Usamos el subdominio de reproductor de Widgets oficial ("://soundcloud.com")
+    // el cual está totalmente autorizado para cargar listas y pistas completas en páginas estáticas.
+    const urlWidgetSoundCloud = "https://://soundcloud.com/player/?url=https://soundcloud.com/search/tracks?q=" + encodeURIComponent(termino) + "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
     
-    const urlFinal = urlBase + encodeURIComponent(termino) + opcionesExtras;
-    
-    // Inyectamos la URL directamente en el iframe y lo hacemos visible en tu pantalla
-    iframe.src = urlFinal;
+    // Inyectamos la URL limpia en el iframe y lo hacemos visible
+    iframe.src = urlWidgetSoundCloud;
     wrapper.style.display = "block";
     
-    nowPlaying.innerText = "Cargando éxitos de: " + termino;
+    nowPlaying.innerText = "Reproduciendo éxitos de: " + termino;
 }
 
 // Soporte para presionar la tecla Enter en dispositivos móviles
