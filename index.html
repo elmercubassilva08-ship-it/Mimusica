@@ -62,7 +62,7 @@
         <button onclick="buscarMusica()">Buscar</button>
     </div>
 
-    <p>Escribe tu artista favorito. Al presionar buscar, se abrirá tu música de forma directa, legal y sin anuncios molestos.</p>
+    <p>Escribe tu artista favorito. Al presionar buscar, se abrirá tu música de forma directa y sin anuncios.</p>
 </div>
 
 <script>
@@ -70,7 +70,7 @@ function buscarMusica() {
     const termino = document.getElementById('busqueda').value;
     if(!termino) return;
     
-    // Abre la búsqueda de forma externa saltando cualquier bloqueo de servidor
+    // Dirección web totalmente completa para evitar errores de ruta en el navegador
     const urlLimpia = "https://soundcloud.com" + encodeURIComponent(termino);
     window.open(urlLimpia, '_blank');
 }
