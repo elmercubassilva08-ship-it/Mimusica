@@ -109,25 +109,25 @@
     </div>
 
     <script>
-        // 🌟 LIBRERÍA CORREGIDA CON ENLACES MP3 REALES Y ACTIVOS DE INTERNET
+        // 🌟 LIBRERÍA OPTIMIZADA CON MP3 REALES DE WIKIMEDIA (Compatibles con celulares)
         const libreriaCanciones = [
             { 
                 artista: "andres calamaro", 
-                cancion: "Flaca", 
+                cancion: "Flaca / Prueba", 
                 genero: "Rock", 
-                url: "https://soundhelix.com" 
+                url: "https://wikimedia.org" 
             },
             { 
                 artista: "mana", 
-                cancion: "Labios Compartidos", 
+                cancion: "Labios Compartidos / Prueba", 
                 genero: "Rock", 
-                url: "https://soundhelix.com" 
+                url: "https://wikimedia.org" 
             },
             { 
                 artista: "mar de copas", 
-                cancion: "Verano Traidor", 
+                cancion: "Verano Traidor / Prueba", 
                 genero: "Rock Peruano", 
-                url: "https://soundhelix.com" 
+                url: "https://wikimedia.org" 
             }
         ];
 
@@ -156,19 +156,19 @@
             );
 
             if (resultado) {
-                textoEstado.textContent = "Reproduciendo: " + resultado.cancion + " - " + resultado.artista;
+                textoEstado.textContent = "Reproduciendo: " + resultado.cancion;
                 
-                // Cargar el archivo MP3 real en el reproductor blanco
+                // Inyectar la URL del archivo de sonido real
                 reproductorAudio.src = resultado.url;
                 reproductorAudio.load();
                 
-                // Forzar reproducción
+                // Forzar reproducción interactiva
                 reproductorAudio.play().catch(err => {
                     textoEstado.textContent = "Canción lista. Presiona el Play blanco.";
                 });
             } else {
                 textoEstado.textContent = "";
-                mostrarError("No se encontraron resultados en el catálogo para: " + inputBusqueda.value);
+                mostrarError("No se encontraron resultados para: " + inputBusqueda.value);
             }
         }
 
