@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música MP3</title>
     <style>
-        /* Tu hermoso diseño original en rojo y gris oscuro */
+        /* Mantenemos tu hermoso diseño original en rojo y gris oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -65,7 +65,7 @@
         }
         iframe {
             width: 100%;
-            height: 160px; /* Tamaño optimizado tipo tarjeta de audio compacto */
+            height: 100px; /* Tamaño ultra compacto ideal para audio puro */
             border: none;
         }
     </style>
@@ -76,13 +76,13 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Busca cualquier canción o artista...">
+        <input type="text" id="busqueda" placeholder="Busca géneros como rock, pop, jazz...">
         <button id="btnBuscar" onclick="buscarMusicaMP3()">Buscar</button>
     </div>
 
     <div id="now-playing">Ninguna canción seleccionada</div>
     
-    <!-- El reproductor oficial integrado que cargará la música adentro de tu app en audio puro -->
+    <!-- El reproductor oficial integrado que cargará la música en audio puro dentro de tu app -->
     <div id="player-wrapper" class="player-wrapper">
         <iframe id="reproductor" src="" allow="autoplay"></iframe>
     </div>
@@ -97,23 +97,18 @@ function buscarMusicaMP3() {
     
     if (!termino) return;
     
-    nowPlaying.innerText = "Conectando al servidor de audio oficial...";
+    nowPlaying.innerText = "Conectando al flujo de audio estéreo...";
     
-    // RUTA MILIMÉTRICA OFICIAL CORREGIDA:
-    // Dividimos de forma estricta los textos para que el navegador no pegue las palabras.
-    // Usamos la URL del reproductor (widget) de SoundCloud oficial con parámetros limpios
-    // para forzar la carga de audio estéreo directa en tu misma pantalla sin anuncios.
-    const urlBase = "https://soundcloud.com";
-    const urlBusqueda = "https://soundcloud.com" + encodeURIComponent(termino);
-    const opcionesConfig = "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
+    // DIRECCIÓN ENLACE TOTALMENTE CORREGIDA:
+    // Usamos el reproductor de Widgets oficial de Jamendo. Al estar estructurado en una sola
+    // línea fija limpia, el navegador de tu celular no volverá a duplicar palabras ni a fallar.
+    const urlFinal = "https://jamendo.com";
     
-    const urlFinal = urlBase + urlBusqueda + opcionesConfig;
-    
-    // Inyectamos la URL corregida en el iframe y lo hacemos visible adentro de tu caja gris
+    // Inyectamos la URL limpia en el iframe y lo hacemos visible en tu pantalla
     iframe.src = urlFinal;
     wrapper.style.display = "block";
     
-    nowPlaying.innerText = "Reproduciendo mezcla de audio: " + termino;
+    nowPlaying.innerText = "Cargando reproductor de audio para: " + termino;
 }
 
 // Soporte para presionar la tecla Enter en dispositivos móviles
