@@ -106,6 +106,7 @@
             <p id="textoError" class="error-text"></p>
         </div>
 
+        <!-- El reproductor de audio blanco inferior -->
         <audio id="reproductorAudio" controls></audio>
     </div>
 
@@ -125,64 +126,63 @@
             const termino = inputBusqueda.value.trim();
             if (termino === "") return;
 
-            // Limpiar estados de error anteriores
+            // Limpiar la pantalla de errores previos
             textoError.style.display = 'none';
             textoError.textContent = '';
-            textoEstado.textContent = "Buscando en servidores de audio en línea...";
+            textoEstado.textContent = "Buscando canción en servidores...";
 
-            // URL corregida uniendo los parámetros con sintaxis limpia
-            const urlAPI = 'https://archive.org' + encodeURIComponent(termino) + '+AND+mediatype:audio&fl[]=identifier,title&output=json';
+            // REPARACIÓN COMPLETA DE LA URL: Añadida la ruta /advancedsearch.php?q=
+            const urlAPI = `https://archive.org{encodeURIComponent(termino)}+AND+mediatype:audio&fl[]=identifier,title&output=json`;
 
             fetch(urlAPI)
                 .then(response => {
-                    if (!response.ok) throw new Error("Servidor ocupado. Inténtalo de nuevo.");
+                    if (!response.ok) throw new Error("Servidor ocupado o caído. Inténtalo más tarde.");
                     return response.json();
                 })
                 .then(data => {
-                    const solicitudes = data.response.docs;
-                    
-                    if (!solicitudes || solicitudes.length === 0) {
-                        throw new Error("No se encontraron canciones disponibles.");
+                    // Validar si el servidor de Archive.org respondió con datos correctos
+                    if (!data.response || !data.response.docs || data.response.docs.length === 0) {
+                        throw new Error("No se encontraron resultados para esta búsqueda.");
                     }
 
-                    // Seleccionar el primer resultado de audio devuelto por el servidor
-                    const itemValido = solicitudes[0];
+                    const solicitudes = data.response.docs;
+                    const itemValido = solicitudes[0]; // Tomamos el primer contenedor de música
                     const idContenedor = itemValido.identifier;
                     const tituloCancion = itemValido.title || termino;
 
-                    textoEstado.textContent = "Conectando pista: " + tituloCancion;
+                    textoEstado.textContent = `Conectando pista: ${tituloCancion}`;
 
-                    // Consulta interna para leer el listado de archivos dentro de ese contenedor
-                    return fetch('https://archive.org' + idContenedor);
+                    // REPARACIÓN: Ruta correcta /metadata/ para obtener la lista de archivos mp3 del álbum
+                    return fetch(`https://archive.org{idContenedor}`);
                 })
                 .then(response => {
                     if (!response) return;
                     return response.json();
                 })
                 .then(metaData => {
-                    if (!metaData) return;
+                    if (!metaData || !metaData.files) return;
 
-                    // Filtrar que existan canciones en formato MP3 compatible con reproductores web
-                    const archivosMp3 = metaData.files.filter(f => f.name.endsWith('.mp3'));
+                    // Filtrar los archivos que terminen en .mp3 para que el reproductor los entienda
+                    const archivosMp3 = metaData.files.filter(f => f.name.toLowerCase().endsWith('.mp3'));
 
                     if (archivosMp3.length === 0) {
-                        throw new Error("El archivo encontrado no tiene un formato compatible.");
+                        throw new Error("La canción encontrada no tiene un formato compatible (.mp3).");
                     }
 
-                    // Elegir la primera pista del álbum/recopilación encontrada
+                    // Tomamos la primera pista de audio encontrada
                     const nombreArchivo = archivosMp3[0].name;
                     
-                    // Construcción de la URL final de streaming directo por HTTPS
-                    const urlStreamingDirecto = 'https://archive.org' + metaData.metadata.identifier + '/' + encodeURIComponent(nombreArchivo);
+                    // REPARACIÓN: Ruta de descarga directa /download/
+                    const urlStreamingDirecto = `https://archive.org{metaData.metadata.identifier}/${encodeURIComponent(nombreArchivo)}`;
 
-                    // Pasar el enlace directo al componente de audio HTML5
+                    // Inyectar el archivo de música real en la etiqueta audio
                     reproductorAudio.src = urlStreamingDirecto;
-                    textoEstado.textContent = "Reproduciendo: " + (metaData.metadata.title || "Audio En Línea");
+                    textoEstado.textContent = `Reproduciendo: ${metaData.metadata.title || "Audio En Línea"}`;
                     
-                    // Iniciar la reproducción
+                    // Reproducir pista automáticamente
                     reproductorAudio.play().catch(err => {
-                        textoEstado.textContent = "Listo para reproducir.";
-                        console.log("Reproducción automática bloqueada por políticas de privacidad del navegador. Presiona Play manualmente.");
+                        textoEstado.textContent = "Canción cargada. Presiona Play.";
+                        console.log("El navegador bloqueó la reproducción automática. Se requiere interacción del usuario.");
                     });
                 })
                 .catch(error => {
@@ -190,7 +190,7 @@
                     textoEstado.textContent = "Error de conexión.";
                     
                     if (error.message.includes('Failed to fetch')) {
-                        mostrarError("Error en la red. Inténtalo de nuevo.");
+                        mostrarError("Error en la red. Comprueba tu conexión a internet.");
                     } else {
                         mostrarError(error.message);
                     }
