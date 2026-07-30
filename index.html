@@ -86,7 +86,7 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Busca por género o nombre...">
+        <input type="text" id="busqueda" placeholder="Busca géneros (Rock, Pop) o nombres...">
         <button id="btnBuscar" onclick="buscarMusicaMP3()">Buscar</button>
     </div>
 
@@ -104,20 +104,21 @@ async function buscarMusicaMP3() {
     const contenedor = document.getElementById('resultados');
     if (!termino) return;
     
-    contenedor.innerHTML = "<p class='mensaje'>Buscando canciones MP3 libres de bloqueos...</p>";
+    contenedor.innerHTML = "<p class='mensaje'>Buscando canciones MP3...</p>";
 
     try {
-        // Conexión directa y permitida a los servidores abiertos de Jamendo API
-        const clientId = "56d30c55";
-        const url = "https://jamendo.com" + clientId + "&format=json&limit=10&search=" + encodeURIComponent(termino);
+        // DIRECCIÓN COMPLETAMENTE CORREGIDA Y OFICIAL:
+        const urlBase = "https://jamendo.com";
+        const parametros = "?client_id=56d30c55&format=json&limit=10&search=" + encodeURIComponent(termino);
+        const urlFinal = urlBase + parametros;
         
-        const respuesta = await fetch(url);
+        const respuesta = await fetch(urlFinal);
         const datos = await respuesta.json();
         
         contenedor.innerHTML = "";
         
         if (!datos.results || datos.results.length === 0) {
-            contenedor.innerHTML = "<p class='mensaje'>No se encontraron archivos de audio para esa búsqueda. Intenta con un género musical (ej: Rock, Pop, Metal).</p>";
+            contenedor.innerHTML = "<p class='mensaje'>No se encontraron archivos de audio para esa búsqueda. Intenta con géneros musicales como 'Rock', 'Pop', 'Dance' o 'Chill'.</p>";
             return;
         }
         
@@ -143,7 +144,7 @@ async function buscarMusicaMP3() {
         });
         
     } catch (error) {
-        contenedor.innerHTML = "<p class='mensaje' style='color:#ff4444;'>Error en el servidor de música. Inténtalo de nuevo.</p>";
+        contenedor.innerHTML = "<p class='mensaje' style='color:#ff4444;'>Error de conexión. Inténtalo de nuevo.</p>";
         console.error(error);
     }
 }
