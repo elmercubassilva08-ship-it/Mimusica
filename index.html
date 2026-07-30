@@ -97,7 +97,7 @@
         <h1>🎵 Mi Música</h1>
 
         <div class="search-box">
-            <input type="text" id="inputBusqueda" placeholder="Busca por artista, canción o género...">
+            <input type="text" id="inputBusqueda" placeholder="Andrés Calamaro, Mana, Mar de copas...">
             <button id="botonBuscar">Buscar</button>
         </div>
 
@@ -110,89 +110,69 @@
     </div>
 
     <script>
-        // 📚 LIBRERÍA MUSICAL INTERNA DE LA APP (Enlaces MP3 directos garantizados sin CORS)
-        const libreriaCanciones = [
-            {
-                artista: "Mar de copas",
-                cancion: "Mujer Noche",
-                genero: "Rock Peruano",
-                url: "https://soundhelix.com"
-            },
-            {
-                artista: "Mar de copas",
-                cancion: "Un día sin ti",
-                genero: "Rock Peruano",
-                url: "https://soundhelix.com"
-            },
-            {
-                artista: "Mana",
-                cancion: "Labios Compartidos",
-                genero: "Rock",
-                url: "https://soundhelix.com"
-            },
-            {
-                artista: "Andres Calamaro",
-                cancion: "Flaca",
-                genero: "Rock",
-                url: "https://soundhelix.com"
-            },
-            {
-                artista: "Libido",
-                cancion: "Como un perro",
-                genero: "Rock Peruano",
-                url: "https://soundhelix.com"
-            },
-            {
-                artista: "Coldplay",
-                cancion: "Clocks",
-                genero: "Pop",
-                url: "https://soundhelix.com"
-            }
-        ];
-
         const inputBusqueda = document.getElementById('inputBusqueda');
         const botonBuscar = document.getElementById('botonBuscar');
         const reproductorAudio = document.getElementById('reproductorAudio');
         const textoEstado = document.getElementById('textoEstado');
         const textoError = document.getElementById('textoError');
 
-        botonBuscar.addEventListener('click', ejecutarBusquedaInterna);
+        botonBuscar.addEventListener('click', buscarEnLibreriaExterna);
         inputBusqueda.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') ejecutarBusquedaInterna();
+            if (e.key === 'Enter') buscarEnLibreriaExterna();
         });
 
-        function ejecutarBusquedaInterna() {
-            const termino = inputBusqueda.value.trim().toLowerCase();
+        function buscarEnLibreriaExterna() {
+            const termino = inputBusqueda.value.trim();
             if (termino === "") return;
 
-            // Limpiar estados visuales
+            // Resetear mensajes e iniciar carga interna
             textoError.style.display = 'none';
-            textoEstado.textContent = "Buscando en la librería de la app...";
+            textoError.textContent = '';
+            textoEstado.textContent = "Conectando con la librería en línea...";
 
-            // Filtrar la librería por Artista, Canción o Género
-            const resultado = libreriaCanciones.find(item => 
-                item.artista.toLowerCase().includes(termino) || 
-                item.cancion.toLowerCase().includes(termino) ||
-                item.genero.toLowerCase().includes(termino)
-            );
+            // 1. Creamos la consulta para la librería millonaria de Deezer
+            const urlDeezer = 'https://deezer.com' + encodeURIComponent(termino) + '&limit=5';
+            
+            // 2. La envolvemos en el proxy AllOrigins para romper el bloqueo CORS de raíz
+            const urlFinal = 'https://allorigins.win' + encodeURIComponent(urlDeezer);
 
-            if (resultado) {
-                // Mostrar datos en la interfaz
-                textoEstado.textContent = "Reproduciendo: " + resultado.cancion + " - " + resultado.artista;
-                
-                // Cargar el archivo MP3 directo en el reproductor nativo
-                reproductorAudio.src = resultado.url;
-                reproductorAudio.load();
-                
-                // Forzar reproducción activa
-                reproductorAudio.play().catch(err => {
-                    textoEstado.textContent = "Canción lista. Presiona Play.";
-                    console.log("El navegador móvil bloqueó el autoplay. Presionar play manualmente.");
+            fetch(urlFinal)
+                .then(response => {
+                    if (!response.ok) throw new Error("Error al procesar la solicitud en el servidor.");
+                    return response.json();
+                })
+                .then(data => {
+                    // El proxy entrega la respuesta real como texto dentro de la propiedad 'contents'
+                    const respuestaReal = JSON.parse(data.contents);
+
+                    if (!respuestaReal.data || respuestaReal.data.length === 0) {
+                        throw new Error("No se encontraron canciones para esta búsqueda.");
+                    }
+
+                    // Tomamos el primer resultado que coincide con el artista o género buscado
+                    const pista = respuestaReal.data[0];
+                    
+                    // Mostramos el nombre de la canción en la interfaz de la app
+                    textoEstado.textContent = "Reproduciendo: " + pista.title + " - " + pista.artist.name;
+
+                    // IMPORTANTE: Forzamos HTTPS en el archivo mp3 para que GitHub Pages no lo bloquee por seguridad
+                    const urlMp3Segura = pista.preview.replace(/^http:\/\//i, 'https://');
+
+                    // Inyectamos el archivo de sonido directamente en su barra blanca
+                    reproductorAudio.src = urlMp3Segura;
+                    reproductorAudio.load();
+                    
+                    // Ejecutamos la reproducción
+                    reproductorAudio.play().catch(err => {
+                        textoEstado.textContent = "Canción cargada. Dale al botón de Play blanco.";
+                        console.log("El navegador del móvil requiere una pulsación física para sonar.");
+                    });
+                })
+                .catch(error => {
+                    console.error("Falla en la app:", error);
+                    textoEstado.textContent = "";
+                    mostrarError(error.message || "Error de conexión. Inténtalo de nuevo.");
                 });
-            } else {
-                textoEstado.textContent = "";
-                mostrarError("No se encontraron resultados para '" + inputBusqueda.value + "'.");
-            }
         }
 
         function mostrarError(mensaje) {
