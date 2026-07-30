@@ -130,44 +130,47 @@
             textoError.textContent = '';
             textoEstado.textContent = "Buscando canción en servidores...";
 
-            // API de Deezer estructurada con concatenación simple e infalible
-            const urlDeezer original = 'https://deezer.com' + encodeURIComponent(termino) + '&limit=1';
-            const urlAPI = 'https://allorigins.win' + encodeURIComponent(urlDeezerOriginal);
+            // CORREGIDO: Se eliminó el espacio en blanco del nombre de la variable para evitar que se congele
+            const urlDeezerOriginal = 'https://deezer.com' + encodeURIComponent(termino) + '&limit=1';
+            const urlAPI = 'https://herokuapp.com' + urlDeezerOriginal;
 
             fetch(urlAPI)
                 .then(response => {
-                    if (!response.ok) throw new Error("Servidor ocupado. Inténtalo de nuevo.");
+                    if (!response.ok) throw new Error("Servidor intermedio ocupado o requiere activación. Inténtalo de nuevo.");
                     return response.json();
                 })
                 .then(data => {
-                    // El proxy devuelve la respuesta dentro de data.contents como un texto plano
-                    const deezData = JSON.parse(data.contents);
-
-                    if (!deezData.data || deezData.data.length === 0) {
+                    if (!data.data || data.data.length === 0) {
                         throw new Error("No se encontraron canciones para esta búsqueda.");
                     }
 
-                    const cancion = deezData.data[0];
+                    const cancion = data.data[0];
                     
-                    // Mostrar los datos en pantalla
+                    // Mostrar los datos en la pantalla del celular
                     textoEstado.textContent = "Reproduciendo: " + cancion.title + " - " + cancion.artist.name;
 
-                    // Cambiar la URL de audio a HTTPS para evitar bloqueos en github.io
+                    // Forzar que la música viaje por conexión segura HTTPS obligatoria en GitHub
                     const urlAudioSegura = cancion.preview.replace(/^http:\/\//i, 'https://');
 
-                    // Cargar el archivo directamente en el reproductor blanco
+                    // Cargar el archivo de sonido directamente en el reproductor blanco inferior
                     reproductorAudio.src = urlAudioSegura;
                     
-                    // Forzar el inicio de la música
+                    // Iniciar la música
                     reproductorAudio.play().catch(err => {
-                        textoEstado.textContent = "Canción lista. Presiona Play.";
-                        console.log("El navegador requiere que presiones Play manualmente.");
+                        textoEstado.textContent = "Canción lista. Presiona el botón Play blanco.";
+                        console.log("El navegador bloqueó el inicio automático. Requiere play del usuario.");
                     });
                 })
                 .catch(error => {
                     console.error("Error del sistema:", error);
                     textoEstado.textContent = "";
-                    mostrarError(error.message || "Error en la red. Inténtalo de nuevo.");
+                    
+                    // Si el proxy gratuito requiere un permiso rápido de activación en pantalla
+                    if (error.message.includes("requiere activación")) {
+                        mostrarError("Por favor, abre una vez esta web en tu celular para activar el servidor de música: https://herokuapp.comcorsdemo y luego regresa aquí.");
+                    } else {
+                        mostrarError("Error en la red. Inténtalo de nuevo.");
+                    }
                 });
         }
 
