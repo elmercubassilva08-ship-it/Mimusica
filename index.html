@@ -53,21 +53,13 @@
         
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
         
-        /* Contenedor del reproductor oficial integrado */
-        .player-wrapper {
+        /* Tu reproductor nativo de audio blanco siempre visible y limpio */
+        audio {
+            width: 100%;
             margin-top: 15px;
-            width: 100%;
-            border-radius: 15px;
-            overflow: hidden;
-            display: none; /* Se activa al buscar */
-            background-color: #1a1a1a;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: block !important;
         }
-        iframe {
-            width: 100%;
-            height: 100px; /* Tamaño optimizado para audio puro */
-            border: none;
-        }
+        p { font-size: 13px; color: #888; line-height: 1.4; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -76,42 +68,62 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Busca géneros (rock, pop, chill)...">
-        <button id="btnBuscar" onclick="buscarMusicaMP3()">Buscar</button>
+        <input type="text" id="busqueda" placeholder="Escribe un género (ej: rock, pop, jazz)...">
+        <button id="btnBuscar" onclick="conectarEstacion()">Buscar</button>
     </div>
 
-    <div id="now-playing">Ninguna canción seleccionada</div>
+    <div id="now-playing">Ninguna estación seleccionada</div>
+
+    <!-- Tu reproductor nativo inmune a bloqueos de pantalla gris -->
+    <audio id="reproductor" controls></audio>
     
-    <!-- El reproductor oficial integrado que cargará la música en audio puro dentro de tu app -->
-    <div id="player-wrapper" class="player-wrapper">
-        <iframe id="reproductor" src="" allow="autoplay"></iframe>
-    </div>
+    <p>Escribe tu género musical favorito. Al presionar buscar, tu app sintonizará una transmisión de audio digital en vivo sin publicidad intrusiva.</p>
 </div>
 
 <script>
-function buscarMusicaMP3() {
-    const termino = document.getElementById('busqueda').value.trim();
-    const wrapper = document.getElementById('player-wrapper');
-    const iframe = document.getElementById('reproductor');
+function conectarEstacion() {
+    const termino = document.getElementById('busqueda').value.trim().toLowerCase();
+    const reproductor = document.getElementById('reproductor');
     const nowPlaying = document.getElementById('now-playing');
     
     if (!termino) return;
     
-    nowPlaying.innerText = "Conectando al flujo de audio estéreo...";
+    nowPlaying.innerText = "Sintonizando señal de audio digital...";
     
-    // URL REPARADA: Cambiamos a la ruta de transmisión directa que carga el player nativo sin errores
-    const urlFinal = "https://jamendo.com" + encodeURIComponent(termino);
+    // Lista de transmisiones de audio MP3 estables y libres de bloqueos CORS
+    let urlStreaming = "";
+    let nombreEstacion = "";
     
-    iframe.src = urlFinal;
-    wrapper.style.display = "block";
+    if (termino.includes("rock")) {
+        urlStreaming = "https://rockantenne.de";
+        nombreEstacion = "Estación: Rock Antenne Live (MP3 Puro)";
+    } else if (termino.includes("pop")) {
+        urlStreaming = "https://181.fm";
+        nombreEstacion = "Estación: 181.FM Awesome 80s (MP3 Puro)";
+    } else if (termino.includes("jazz")) {
+        urlStreaming = "https://jazzradio.com";
+        nombreEstacion = "Estación: Smooth Jazz Radio (MP3 Puro)";
+    } else {
+        // Estación clásica de éxitos globales por defecto si escribe otra cosa
+        urlStreaming = "https://181fm.com";
+        nombreEstacion = "Estación: Hits Globales Mix (MP3 Puro)";
+    }
     
-    nowPlaying.innerText = "Escuchando: " + termino;
+    // Inyectamos la URL cruda directamente en tu reproductor blanco nativo
+    reproductor.src = urlStreaming;
+    reproductor.load();
+    
+    reproductor.play().then(() => {
+        nowPlaying.innerText = nombreEstacion;
+    }).catch(e => {
+        nowPlaying.innerText = "Señal enlazada. Presiona PLAY en el reproductor blanco.";
+    });
 }
 
 // Soporte para presionar la tecla Enter en dispositivos móviles
 document.getElementById('busqueda').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-        buscarMusicaMP3();
+        conectarEstacion();
     }
 });
 </script>
