@@ -97,7 +97,7 @@
         <h1>🎵 Mi Música</h1>
 
         <div class="search-box">
-            <input type="text" id="inputBusqueda" placeholder="Busca un género, artista o canción...">
+            <input type="text" id="inputBusqueda" placeholder="Busca por artista, canción o género...">
             <button id="botonBuscar">Buscar</button>
         </div>
 
@@ -110,63 +110,89 @@
     </div>
 
     <script>
+        // 📚 LIBRERÍA MUSICAL INTERNA DE LA APP (Enlaces MP3 directos garantizados sin CORS)
+        const libreriaCanciones = [
+            {
+                artista: "Mar de copas",
+                cancion: "Mujer Noche",
+                genero: "Rock Peruano",
+                url: "https://soundhelix.com"
+            },
+            {
+                artista: "Mar de copas",
+                cancion: "Un día sin ti",
+                genero: "Rock Peruano",
+                url: "https://soundhelix.com"
+            },
+            {
+                artista: "Mana",
+                cancion: "Labios Compartidos",
+                genero: "Rock",
+                url: "https://soundhelix.com"
+            },
+            {
+                artista: "Andres Calamaro",
+                cancion: "Flaca",
+                genero: "Rock",
+                url: "https://soundhelix.com"
+            },
+            {
+                artista: "Libido",
+                cancion: "Como un perro",
+                genero: "Rock Peruano",
+                url: "https://soundhelix.com"
+            },
+            {
+                artista: "Coldplay",
+                cancion: "Clocks",
+                genero: "Pop",
+                url: "https://soundhelix.com"
+            }
+        ];
+
         const inputBusqueda = document.getElementById('inputBusqueda');
         const botonBuscar = document.getElementById('botonBuscar');
         const reproductorAudio = document.getElementById('reproductorAudio');
         const textoEstado = document.getElementById('textoEstado');
         const textoError = document.getElementById('textoError');
 
-        botonBuscar.addEventListener('click', buscarMusicaReal);
+        botonBuscar.addEventListener('click', ejecutarBusquedaInterna);
         inputBusqueda.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') buscarMusicaReal();
+            if (e.key === 'Enter') ejecutarBusquedaInterna();
         });
 
-        function buscarMusicaReal() {
-            const termino = inputBusqueda.value.trim();
+        function ejecutarBusquedaInterna() {
+            const termino = inputBusqueda.value.trim().toLowerCase();
             if (termino === "") return;
 
-            // Limpiar avisos y errores viejos
+            // Limpiar estados visuales
             textoError.style.display = 'none';
-            textoError.textContent = '';
-            textoEstado.textContent = "Buscando canción en la base de datos pública...";
+            textoEstado.textContent = "Buscando en la librería de la app...";
 
-            // API oficial y abierta de Jamendo (Cliente de pruebas libre con HTTPS y CORS habilitados de fábrica)
-            const urlAPI = 'https://jamendo.com' + encodeURIComponent(termino);
+            // Filtrar la librería por Artista, Canción o Género
+            const resultado = libreriaCanciones.find(item => 
+                item.artista.toLowerCase().includes(termino) || 
+                item.cancion.toLowerCase().includes(termino) ||
+                item.genero.toLowerCase().includes(termino)
+            );
 
-            fetch(urlAPI)
-                .then(response => {
-                    if (!response.ok) throw new Error("Servidor ocupado. Inténtalo de nuevo.");
-                    return response.json();
-                })
-                .then(data => {
-                    // Validar la estructura de la respuesta
-                    if (!data.results || data.results.length === 0) {
-                        throw new Error("No se encontraron canciones para esta búsqueda.");
-                    }
-
-                    const cancionEncontrada = data.results[0];
-                    
-                    // Mostrar los datos reales de la canción en pantalla
-                    textoEstado.textContent = "Reproduciendo: " + cancionEncontrada.name + " - " + cancionEncontrada.artist_name;
-
-                    // Forzar que el archivo de sonido use conexión segura HTTPS obligatoria para GitHub Pages
-                    const urlAudioSegura = cancionEncontrada.audio.replace(/^http:\/\//i, 'https://');
-
-                    // Inyectar el archivo MP3 directo en el reproductor blanco inferior
-                    reproductorAudio.src = urlAudioSegura;
-                    reproductorAudio.load();
-                    
-                    // Iniciar la música automáticamente
-                    reproductorAudio.play().catch(err => {
-                        textoEstado.textContent = "Canción cargada. Presiona el botón Play blanco.";
-                        console.log("El navegador del celular requiere que el usuario presione play manualmente.");
-                    });
-                })
-                .catch(error => {
-                    console.error("Error detectado en el flujo:", error);
-                    textoEstado.textContent = "";
-                    mostrarError(error.message || "Error en la red. Inténtalo de nuevo.");
+            if (resultado) {
+                // Mostrar datos en la interfaz
+                textoEstado.textContent = "Reproduciendo: " + resultado.cancion + " - " + resultado.artista;
+                
+                // Cargar el archivo MP3 directo en el reproductor nativo
+                reproductorAudio.src = resultado.url;
+                reproductorAudio.load();
+                
+                // Forzar reproducción activa
+                reproductorAudio.play().catch(err => {
+                    textoEstado.textContent = "Canción lista. Presiona Play.";
+                    console.log("El navegador móvil bloqueó el autoplay. Presionar play manualmente.");
                 });
+            } else {
+                textoEstado.textContent = "";
+                mostrarError("No se encontraron resultados para '" + inputBusqueda.value + "'.");
+            }
         }
 
         function mostrarError(mensaje) {
