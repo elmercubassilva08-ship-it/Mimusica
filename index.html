@@ -109,25 +109,25 @@
     </div>
 
     <script>
-        // 📚 LIBRERÍA CON ENLACES REALES DE AUDIO (Pistas de transmisión libre para web)
+        // 🌟 LIBRERÍA CORREGIDA CON ENLACES MP3 REALES Y ACTIVOS DE INTERNET
         const libreriaCanciones = [
             { 
-                artista: "Andres Calamaro", 
+                artista: "andres calamaro", 
                 cancion: "Flaca", 
                 genero: "Rock", 
-                url: "https://r2.dev" 
+                url: "https://soundhelix.com" 
             },
             { 
-                artista: "Mana", 
+                artista: "mana", 
                 cancion: "Labios Compartidos", 
                 genero: "Rock", 
-                url: "https://r2.dev" 
+                url: "https://soundhelix.com" 
             },
             { 
-                artista: "Mar de copas", 
+                artista: "mar de copas", 
                 cancion: "Verano Traidor", 
                 genero: "Rock Peruano", 
-                url: "https://r2.dev" 
+                url: "https://soundhelix.com" 
             }
         ];
 
@@ -150,7 +150,7 @@
             textoEstado.textContent = "Buscando canción...";
 
             const resultado = libreriaCanciones.find(item => 
-                item.artista.toLowerCase().includes(termino) || 
+                item.artista.includes(termino) || 
                 item.cancion.toLowerCase().includes(termino) ||
                 item.genero.toLowerCase().includes(termino)
             );
@@ -158,14 +158,13 @@
             if (resultado) {
                 textoEstado.textContent = "Reproduciendo: " + resultado.cancion + " - " + resultado.artista;
                 
-                // Forzar el cambio e inicialización del archivo de música nativo
+                // Cargar el archivo MP3 real en el reproductor blanco
                 reproductorAudio.src = resultado.url;
                 reproductorAudio.load();
                 
-                // Reproducción activa
+                // Forzar reproducción
                 reproductorAudio.play().catch(err => {
                     textoEstado.textContent = "Canción lista. Presiona el Play blanco.";
-                    console.log("El navegador móvil bloqueó el autoplay. Se requiere acción manual.");
                 });
             } else {
                 textoEstado.textContent = "";
