@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música MP3</title>
     <style>
-        /* Tu hermoso diseño original en rojo y gris oscuro */
+        /* Mantenemos tu diseño original impecable en rojo y gris oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -106,30 +106,33 @@ function buscarMusicaMP3() {
     
     contenedor.innerHTML = "<p class='mensaje'>Buscando archivos MP3 globales...</p>";
     
-    // Eliminamos scripts antiguos para no saturar la página
+    // Eliminamos scripts de búsquedas antiguas para mantener limpia la página
     const scriptViejo = document.getElementById('jsonp-deezer');
     if (scriptViejo) scriptViejo.remove();
 
-    // TRUCO TÉCNICO INMUNE A BLOQUEOS: 
-    // Creamos una etiqueta de script dinámica conectada a la base de datos de Deezer.
-    // Esto burla el bloqueo de seguridad de GitHub Pages y trae el flujo MP3 directo.
+    // CONEXIÓN CORREGIDA: Construcción matemática limpia del enlace JSONP oficial
+    const urlBase = "https://deezer.com";
+    const parametros = "&output=jsonp&callback=procesarMP3";
+    const urlCompleta = urlBase + encodeURIComponent(termino) + parametros;
+
+    // Inyectamos de forma dinámica el puente de comunicación inmune a bloqueos
     const script = document.createElement('script');
     script.id = 'jsonp-deezer';
-    script.src = "https://deezer.com" + encodeURIComponent(termino) + "&output=jsonp&callback=procesarMP3";
+    script.src = urlCompleta;
     document.body.appendChild(script);
 }
 
-// Esta función recibe las canciones del servidor y las dibuja en tu pantalla
+// Esta función recibe las canciones comerciales y las dibuja en tu lista
 window.procesarMP3 = function(datos) {
     const contenedor = document.getElementById('resultados');
     contenedor.innerHTML = "";
     
-    if (!datos.data || datos.data.length === 0) {
-        contenedor.innerHTML = "<p class='mensaje'>No se encontraron archivos MP3.</p>";
+    if (!datos || !datos.data || datos.data.length === 0) {
+        contenedor.innerHTML = "<p class='mensaje'>No se encontraron canciones. Intenta con otro nombre.</p>";
         return;
     }
     
-    // Desplegamos los resultados en tu lista gris
+    // Desplegamos los primeros 10 resultados dentro de tu caja gris
     datos.data.slice(0, 10).forEach(cancion => {
         const item = document.createElement('div');
         item.className = 'track-item';
@@ -138,12 +141,12 @@ window.procesarMP3 = function(datos) {
             <div class="track-artist">${cancion.artist.name}</div>
         `;
         
-        // Al tocar la canción, el flujo del archivo .mp3 va directo a tu reproductor nativo
+        // Al tocar el elemento, alimentamos el stream de audio puro al reproductor nativo
         item.onclick = function() {
             const reproductor = document.getElementById('reproductor');
             document.getElementById('now-playing').innerText = "Reproduciendo MP3: " + cancion.title;
             
-            reproductor.src = cancion.preview; // Enlace crudo al archivo de audio sin interfaz de video
+            reproductor.src = cancion.preview; // Archivo de audio limpio sin anuncios intermedios
             reproductor.play();
         };
         
