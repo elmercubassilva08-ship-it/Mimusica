@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música Global</title>
     <style>
+        /* Mantenemos tu impecable diseño original en rojo y oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -52,32 +53,20 @@
         
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
         
-        #resultados {
-            text-align: left;
-            margin-bottom: 25px;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .track-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: #2f2f2f;
-            margin: 8px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .track-item:hover { background: #3f3f3f; }
-        .track-info { flex: 1; overflow: hidden; }
-        .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .track-artist { font-size: 12px; color: #888888; }
-        
-        audio {
-            width: 100%;
+        /* Contenedor del reproductor oficial integrado */
+        .player-wrapper {
             margin-top: 15px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none; /* Se activa al buscar */
+            background-color: #000;
         }
-        .mensaje { text-align: center; color: #aaaaaa; font-size: 14px; }
+        iframe {
+            width: 100%;
+            height: 380px;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -91,13 +80,14 @@
     </div>
 
     <div id="now-playing">Ninguna canción seleccionada</div>
-    <div id="resultados"></div>
-
-    <audio id="reproductor" controls></audio>
+    
+    <!-- El reproductor integrado de Spotify cargará aquí adentro sin salir de la app -->
+    <div id="player-wrapper" class="player-wrapper">
+        <iframe id="reproductor" src="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    </div>
 </div>
 
-<!-- Forzamos al navegador a leer la última versión agregando un número aleatorio al final -->
-<script src="app.js?v=2.0"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
