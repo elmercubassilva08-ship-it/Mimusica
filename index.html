@@ -80,6 +80,7 @@
             font-size: 14px;
             font-weight: 500;
             display: none;
+            word-break: break-all;
         }
 
         audio {
@@ -124,12 +125,13 @@
             const termino = inputBusqueda.value.trim();
             if (termino === "") return;
 
-            // Limpiar errores visuales anteriores
+            // Limpiar estados de error anteriores
             textoError.style.display = 'none';
+            textoError.textContent = '';
             textoEstado.textContent = "Buscando en servidores de audio en línea...";
 
-            // API Abierta de Internet Archive (Filtra por formato MP3 y palabras clave de búsqueda)
-            const urlAPI = `https://archive.org{encodeURIComponent(termino)}+AND+mediatype:audio&fl[]=identifier,title&output=json`;
+            // URL corregida uniendo los parámetros con sintaxis limpia
+            const urlAPI = 'https://archive.org' + encodeURIComponent(termino) + '+AND+mediatype:audio&fl[]=identifier,title&output=json';
 
             fetch(urlAPI)
                 .then(response => {
@@ -143,46 +145,48 @@
                         throw new Error("No se encontraron canciones disponibles.");
                     }
 
-                    // Tomamos el primer contenedor de audio válido encontrado
+                    // Seleccionar el primer resultado de audio devuelto por el servidor
                     const itemValido = solicitudes[0];
                     const idContenedor = itemValido.identifier;
                     const tituloCancion = itemValido.title || termino;
 
-                    textoEstado.textContent = `Conectando pista: ${tituloCancion}`;
+                    textoEstado.textContent = "Conectando pista: " + tituloCancion;
 
-                    // Segunda consulta para extraer los archivos MP3 exactos dentro de ese contenedor
-                    return fetch(`https://archive.org{idContenedor}`);
+                    // Consulta interna para leer el listado de archivos dentro de ese contenedor
+                    return fetch('https://archive.org' + idContenedor);
                 })
                 .then(response => {
-                    if (!response) return; // Si falló el paso anterior
+                    if (!response) return;
                     return response.json();
                 })
                 .then(metaData => {
                     if (!metaData) return;
 
-                    // Filtrar los archivos que sean estrictamente formato MP3 para el reproductor HTML5
+                    // Filtrar que existan canciones en formato MP3 compatible con reproductores web
                     const archivosMp3 = metaData.files.filter(f => f.name.endsWith('.mp3'));
 
                     if (archivosMp3.length === 0) {
                         throw new Error("El archivo encontrado no tiene un formato compatible.");
                     }
 
-                    // Construir la URL de streaming directo usando HTTPS nativo (Cero bloqueos CORS)
+                    // Elegir la primera pista del álbum/recopilación encontrada
                     const nombreArchivo = archivosMp3[0].name;
-                    const urlStreamingDirecto = `https://archive.org{metaData.metadata.identifier}/${encodeURIComponent(nombreArchivo)}`;
-
-                    // Insertar ruta en el reproductor blanco
-                    reproductorAudio.src = urlStreamingDirecto;
-                    textoEstado.textContent = `Reproduciendo: ${metaData.metadata.title || "Audio En Línea"}`;
                     
-                    // Forzar inicio de reproducción
+                    // Construcción de la URL final de streaming directo por HTTPS
+                    const urlStreamingDirecto = 'https://archive.org' + metaData.metadata.identifier + '/' + encodeURIComponent(nombreArchivo);
+
+                    // Pasar el enlace directo al componente de audio HTML5
+                    reproductorAudio.src = urlStreamingDirecto;
+                    textoEstado.textContent = "Reproduciendo: " + (metaData.metadata.title || "Audio En Línea");
+                    
+                    // Iniciar la reproducción
                     reproductorAudio.play().catch(err => {
                         textoEstado.textContent = "Listo para reproducir.";
-                        console.log("Reproducción automática pausada por el navegador. Presiona Play.");
+                        console.log("Reproducción automática bloqueada por políticas de privacidad del navegador. Presiona Play manualmente.");
                     });
                 })
                 .catch(error => {
-                    console.error("Error técnico del sistema:", error);
+                    console.error("Error del sistema:", error);
                     textoEstado.textContent = "Error de conexión.";
                     
                     if (error.message.includes('Failed to fetch')) {
