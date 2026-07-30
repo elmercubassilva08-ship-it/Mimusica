@@ -51,7 +51,26 @@
         button:hover { background-color: #cc0000; }
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
         
-        /* Contenedor adaptado para el reproductor de la librería oficial */
+        #resultados {
+            text-align: left;
+            margin-bottom: 25px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #2f2f2f;
+            margin: 8px 0;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .track-item:hover { background: #3f3f3f; }
+        .track-img { width: 45px; height: 45px; border-radius: 6px; margin-right: 12px; object-fit: cover; }
+        .track-info { flex: 1; overflow: hidden; }
+        .track-title { font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
         #player-wrapper {
             margin-top: 15px;
             width: 100%;
@@ -61,10 +80,10 @@
         }
         iframe {
             width: 100%;
-            height: 220px;
+            height: 120px;
             border: none;
         }
-        p { font-size: 13px; color: #888; line-height: 1.4; }
+        .mensaje { text-align: center; color: #aaaaaa; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -73,64 +92,76 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Busca cualquier canción o artista...">
+        <input type="text" id="busqueda" placeholder="Busca cualquier canción...">
         <button id="btnBuscar" onclick="buscarMusica()">Buscar</button>
     </div>
 
     <div id="now-playing">Ninguna canción seleccionada</div>
+    <div id="resultados"></div>
     
-    <!-- Aquí es donde la librería oficial de YouTube inyectará el reproductor -->
     <div id="player-wrapper">
-        <div id="reproductor-oficial"></div>
+        <iframe id="reproductor" src=""></iframe>
     </div>
-
-    <p style="margin-top: 15px;">Escribe tu canción. La librería oficial abrirá la lista de reproducción automáticamente.</p>
 </div>
 
 <script>
-// 1. Cargar la librería oficial del Iframe Player de YouTube de forma asíncrona
-var tag = document.createElement('script');
-tag.src = "https://youtube.com";
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-var player;
-function onYouTubeIframeAPIReady() {
-    // Inicializa el reproductor oculto listo para recibir música
-    player = new YT.Player('reproductor-oficial', {
-        height: '200',
-        width: '100%',
-        videoId: '', 
-        playerVars: {
-            'autoplay': 1,
-            'controls': 1,
-            'modestbranding': 1, // Quita logos excesivos de YouTube
-            'rel': 0             // No muestra videos recomendados de otros canales
-        }
-    });
-}
-
-function buscarMusica() {
+async function buscarMusica() {
     const termino = document.getElementById('busqueda').value.trim();
-    const nowPlaying = document.getElementById('now-playing');
-    const playerWrapper = document.getElementById('player-wrapper');
-    
+    const contenedor = document.getElementById('resultados');
     if(!termino) return;
     
-    nowPlaying.innerText = "Conectando con la librería oficial...";
-    playerWrapper.style.display = "block";
-    
-    // Convertimos la búsqueda en una URL segura de listas de reproducción de la API de YouTube
-    // Esto fuerza a YouTube a generar una lista automática con las mejores canciones de lo que escribiste
-    const linkBusquedaSegura = "https://youtube.com" + encodeURIComponent(termino) + "&autoplay=1&modestbranding=1";
-    
-    // Inyectamos el flujo oficial dentro del cuadro protector de tu aplicación
-    document.getElementById('player-wrapper').innerHTML = `<iframe src="${linkBusquedaSegura}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    
-    nowPlaying.innerText = "Reproduciendo mezcla de: " + termino;
+    contenedor.innerHTML = "<p class='mensaje'>Buscando en la base de datos...</p>";
+
+    try {
+        // Consultamos un motor de búsqueda público y abierto compatible con GitHub Pages
+        const urlApi = "https://v06.me" + encodeURIComponent(termino);
+        const respuesta = await fetch(urlApi);
+        const canciones = await respuesta.json();
+        
+        contenedor.innerHTML = "";
+        
+        if (!canciones || canciones.length === 0) {
+            contenedor.innerHTML = "<p class='mensaje'>No se encontraron resultados.</p>";
+            return;
+        }
+        
+        // Mostrar la lista de canciones en tu contenedor gris
+        canciones.slice(0, 6).forEach(track => {
+            const item = document.createElement('div');
+            item.className = 'track-item';
+            
+            const portada = track.artwork_url ? track.artwork_url : 'https://picsum.photos';
+            
+            item.innerHTML = `
+                <img class="track-img" src="${portada}" alt="Portada">
+                <div class="track-info">
+                    <div class="track-title">${track.title}</div>
+                </div>
+            `;
+            
+            // Al hacer clic, se abre el reproductor oficial abajo de forma inmediata
+            item.onclick = () => {
+                const wrapper = document.getElementById('player-wrapper');
+                const iframe = document.getElementById('reproductor');
+                const nowPlaying = document.getElementById('now-playing');
+                
+                nowPlaying.innerText = "Reproduciendo: " + track.title;
+                
+                // Cargamos el widget oficial sin anuncios visuales intermedios
+                iframe.src = "https://soundcloud.com" + encodeURIComponent(track.uri) + "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false";
+                wrapper.style.display = "block";
+            };
+            
+            contenedor.appendChild(item);
+        });
+        
+    } catch (error) {
+        contenedor.innerHTML = "<p class='mensaje'>Error al conectar. Inténtalo de nuevo.</p>";
+        console.error(error);
+    }
 }
 
-// Permitir presionar la tecla Enter en teléfonos móviles
+// Soporte para presionar Enter en celulares
 document.getElementById('busqueda').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         buscarMusica();
