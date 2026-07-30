@@ -110,17 +110,17 @@
     </div>
 
     <script>
-        // --- BASE DE DATOS DE MP3 INTEGRADA (Sin depender de APIs externas propensas a fallas de red) ---
+        // Catálogo de música interna con archivos MP3 de transmisión rápida
         const catalogoMusical = [
             {
                 artista: "mana",
                 cancion: "Labios Compartidos",
-                url: "https://soundhelix.com" // Enlace de prueba MP3 directo ultra rápido
+                url: "https://soundhelix.com"
             },
             {
                 artista: "mar de copas",
-                cancion: "Verano Traidor / Mujer Noche",
-                url: "https://soundhelix.com" // Enlace de prueba MP3 directo ultra rápido
+                cancion: "Verano Traidor",
+                url: "https://w3schools.com"
             }
         ];
 
@@ -130,42 +130,38 @@
         const textoEstado = document.getElementById('textoEstado');
         const textoError = document.getElementById('textoError');
 
-        botonBuscar.addEventListener('click', buscarYReproducirFijo);
+        botonBuscar.addEventListener('click', buscarYReproducir);
         inputBusqueda.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') buscarYReproducirFijo();
+            if (e.key === 'Enter') buscarYReproducir();
         });
 
-        function buscarYReproducirFijo() {
+        function buscarYReproducir() {
             const termino = inputBusqueda.value.trim().toLowerCase();
             if (termino === "") return;
 
-            // Limpiar estados visuales
             textoError.style.display = 'none';
-            textoEstado.textContent = "Procesando pista local...";
+            textoEstado.textContent = "Cargando archivo de audio...";
 
-            // Buscar en nuestro catálogo interno
             const resultado = catalogoMusical.find(item => 
                 item.artista.includes(termino) || 
                 item.cancion.toLowerCase().includes(termino)
             );
 
             if (resultado) {
-                // Modificar textos con la canción encontrada
                 textoEstado.textContent = "Reproduciendo: " + resultado.cancion;
                 
-                // Inyectar el archivo MP3 directo en el reproductor blanco
+                // Cargar la nueva dirección URL en el reproductor de forma limpia
                 reproductorAudio.src = resultado.url;
                 reproductorAudio.load();
                 
-                // Reproducir canción automáticamente
+                // Iniciar la música automáticamente
                 reproductorAudio.play().catch(err => {
-                    textoEstado.textContent = "Pista cargada. Presiona el botón Play blanco.";
-                    console.log("Reproducción automática bloqueada por políticas de Chrome.");
+                    textoEstado.textContent = "Cargado correctamente. Presiona Play.";
+                    console.log("El navegador requiere interacción directa del usuario para sonar.");
                 });
             } else {
-                // Si el usuario escribe otra cosa, emular el error controlado
-                textoEstado.textContent = "Error de conexión.";
-                mostrarError("Error en la red. Inténtalo de nuevo.");
+                textoEstado.textContent = "";
+                mostrarError("No se encontró la canción en el catálogo. Inténtalo de nuevo.");
             }
         }
 
