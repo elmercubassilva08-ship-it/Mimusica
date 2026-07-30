@@ -3,178 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎵 Mi Música MP3</title>
+    <title>Mi Música</title>
     <style>
-        /* Mantenemos tu hermoso diseño original en rojo y gris oscuro */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f0f0f;
+            background-color: #0b0b0b;
             color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
         }
+
         .container {
-            background-color: #1f1f1f;
-            padding: 25px;
+            background-color: #161616;
+            width: 90%;
+            max-width: 400px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            width: 100%;
-            max-width: 420px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.7);
             text-align: center;
         }
-        h1 { font-size: 26px; margin-bottom: 20px; color: #ff0000; }
-        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
-        input {
+
+        h1 {
+            color: #ff2d55;
+            font-size: 24px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
             flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 30px;
-            background-color: #2f2f2f;
-            color: white;
+            background-color: #262626;
+            border: 1px solid #333;
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: #ffffff;
             font-size: 16px;
             outline: none;
         }
+
         button {
-            background-color: #ff0000;
+            background-color: #ff2d55;
             color: white;
             border: none;
-            padding: 14px 28px;
-            border-radius: 30px;
-            cursor: pointer;
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-size: 16px;
             font-weight: bold;
-            transition: 0.3s;
-        }
-        button:hover { background-color: #cc0000; }
-        
-        #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
-        
-        /* Lista de canciones encontradas abajo del buscador */
-        #resultados {
-            text-align: left;
-            margin-bottom: 25px;
-            max-height: 220px;
-            overflow-y: auto;
-        }
-        .track-item {
-            padding: 12px;
-            background: #2f2f2f;
-            margin: 8px 0;
-            border-radius: 12px;
             cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid transparent;
         }
-        .track-item:hover { 
-            background: #3f3f3f; 
-            border: 1px solid #ff0000;
+
+        .status-container {
+            min-height: 50px;
+            margin-bottom: 10px;
         }
-        .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .track-artist { font-size: 12px; color: #888888; margin-top: 4px; }
-        
-        /* Tu reproductor nativo de audio blanco fijo */
+
+        .status-text {
+            color: #8e8e93;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .error-text {
+            color: #ff453a;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
         audio {
             width: 100%;
-            margin-top: 15px;
-            display: block !important;
+            border-radius: 30px;
+            background-color: #ffffff;
+            margin-top: 10px;
         }
-        .mensaje { text-align: center; color: #aaaaaa; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🎵 Mi Música</h1>
-    
-    <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Busca un artista, género o canción...">
-        <button id="btnBuscar" onclick="buscarMusicaMP3()">Buscar</button>
+    <div class="container">
+        <h1>🎵 Mi Música</h1>
+
+        <div class="search-box">
+            <input type="text" id="inputBusqueda" placeholder="Mar de copas" value="Mar de copas">
+            <button id="botonBuscar">Buscar</button>
+        </div>
+
+        <div class="status-container">
+            <p id="textoEstado" class="status-text"></p>
+            <p id="textoError" class="error-text"></p>
+        </div>
+
+        <audio id="reproductorAudio" controls></audio>
     </div>
 
-    <div id="now-playing">Ninguna canción seleccionada</div>
-    
-    <!-- Contenedor donde aparecerán las canciones listas para tocar -->
-    <div id="resultados"></div>
+    <script>
+        const inputBusqueda = document.getElementById('inputBusqueda');
+        const botonBuscar = document.getElementById('botonBuscar');
+        const reproductorAudio = document.getElementById('reproductorAudio');
+        const textoEstado = document.getElementById('textoEstado');
+        const textoError = document.getElementById('textoError');
 
-    <audio id="reproductor" controls></audio>
-</div>
-
-<script>
-async function buscarMusicaMP3() {
-    const termino = document.getElementById('busqueda').value.trim();
-    const contenedor = document.getElementById('resultados');
-    const nowPlaying = document.getElementById('now-playing');
-    
-    if (!termino) return;
-    
-    contenedor.innerHTML = "<p class='mensaje'>Buscando canciones...</p>";
-    nowPlaying.innerText = "Buscando...";
-
-    try {
-        // Conexión abierta permitida por GitHub Pages hacia la API oficial de Jamendo
-        const dominio = "https://jamendo.com";
-        const ruta = "/v3.0/tracks/?client_id=56d30c55&format=json&limit=10&search=";
-        const urlFinal = dominio + ruta + encodeURIComponent(termino);
-        
-        const respuesta = await fetch(urlFinal);
-        const datos = await respuesta.json();
-        
-        contenedor.innerHTML = "";
-        
-        if (!datos.results || datos.results.length === 0) {
-            contenedor.innerHTML = "<p class='mensaje'>No se encontraron canciones exactas. Prueba con palabras genéricas como 'Rock', 'Pop', 'Love' o 'Dance'.</p>";
-            nowPlaying.innerText = "Sin resultados.";
-            return;
-        }
-        
-        nowPlaying.innerText = "Resultados encontrados. Toca una canción abajo:";
-        
-        // Dibujamos las tarjetas de canciones en tu contenedor gris oscuro
-        datos.results.forEach(cancion => {
-            const item = document.createElement('div');
-            item.className = 'track-item';
-            item.innerHTML = `
-                <div class="track-title">${cancion.name}</div>
-                <div class="track-artist">${cancion.artist_name}</div>
-            `;
-            
-            // Al hacer clic, alimenta el enlace .mp3 crudo directo al reproductor nativo blanco
-            item.onclick = function() {
-                const reproductor = document.getElementById('reproductor');
-                nowPlaying.innerText = "Preparando MP3: " + cancion.name;
-                
-                reproductor.src = cancion.audio; // Stream de audio crudo directo libre de anuncios
-                reproductor.load();
-                
-                reproductor.play().then(() => {
-                    nowPlaying.innerText = "Reproduciendo: " + cancion.name;
-                }).catch(e => {
-                    // Los navegadores exigen que el usuario presione el botón físico de Play
-                    nowPlaying.innerText = "Audio enlazado. Presiona PLAY en el reproductor blanco.";
-                });
-            };
-            
-            contenedor.appendChild(item);
+        botonBuscar.addEventListener('click', buscarMusicaReal);
+        inputBusqueda.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') buscarMusicaReal();
         });
-        
-    } catch (error) {
-        contenedor.innerHTML = "<p class='mensaje' style='color:#ff4444;'>Error en la red. Inténtalo de nuevo.</p>";
-        nowPlaying.innerText = "Error de conexión.";
-        console.error(error);
-    }
-}
 
-// Soporte para presionar la tecla Enter en dispositivos móviles
-document.getElementById('busqueda').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        buscarMusicaMP3();
-    }
-});
-</script>
+        function buscarMusicaReal() {
+            const termino = inputBusqueda.value.trim();
+            if (termino === "") return;
 
+            // Limpiar errores visuales anteriores
+            textoError.style.display = 'none';
+            textoEstado.textContent = "Buscando en servidores de audio en línea...";
+
+            // API Abierta de Internet Archive (Filtra por formato MP3 y palabras clave de búsqueda)
+            const urlAPI = `https://archive.org{encodeURIComponent(termino)}+AND+mediatype:audio&fl[]=identifier,title&output=json`;
+
+            fetch(urlAPI)
+                .then(response => {
+                    if (!response.ok) throw new Error("Servidor ocupado. Inténtalo de nuevo.");
+                    return response.json();
+                })
+                .then(data => {
+                    const solicitudes = data.response.docs;
+                    
+                    if (!solicitudes || solicitudes.length === 0) {
+                        throw new Error("No se encontraron canciones disponibles.");
+                    }
+
+                    // Tomamos el primer contenedor de audio válido encontrado
+                    const itemValido = solicitudes[0];
+                    const idContenedor = itemValido.identifier;
+                    const tituloCancion = itemValido.title || termino;
+
+                    textoEstado.textContent = `Conectando pista: ${tituloCancion}`;
+
+                    // Segunda consulta para extraer los archivos MP3 exactos dentro de ese contenedor
+                    return fetch(`https://archive.org{idContenedor}`);
+                })
+                .then(response => {
+                    if (!response) return; // Si falló el paso anterior
+                    return response.json();
+                })
+                .then(metaData => {
+                    if (!metaData) return;
+
+                    // Filtrar los archivos que sean estrictamente formato MP3 para el reproductor HTML5
+                    const archivosMp3 = metaData.files.filter(f => f.name.endsWith('.mp3'));
+
+                    if (archivosMp3.length === 0) {
+                        throw new Error("El archivo encontrado no tiene un formato compatible.");
+                    }
+
+                    // Construir la URL de streaming directo usando HTTPS nativo (Cero bloqueos CORS)
+                    const nombreArchivo = archivosMp3[0].name;
+                    const urlStreamingDirecto = `https://archive.org{metaData.metadata.identifier}/${encodeURIComponent(nombreArchivo)}`;
+
+                    // Insertar ruta en el reproductor blanco
+                    reproductorAudio.src = urlStreamingDirecto;
+                    textoEstado.textContent = `Reproduciendo: ${metaData.metadata.title || "Audio En Línea"}`;
+                    
+                    // Forzar inicio de reproducción
+                    reproductorAudio.play().catch(err => {
+                        textoEstado.textContent = "Listo para reproducir.";
+                        console.log("Reproducción automática pausada por el navegador. Presiona Play.");
+                    });
+                })
+                .catch(error => {
+                    console.error("Error técnico del sistema:", error);
+                    textoEstado.textContent = "Error de conexión.";
+                    
+                    if (error.message.includes('Failed to fetch')) {
+                        mostrarError("Error en la red. Inténtalo de nuevo.");
+                    } else {
+                        mostrarError(error.message);
+                    }
+                });
+        }
+
+        function mostrarError(mensaje) {
+            textoError.textContent = mensaje;
+            textoError.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
