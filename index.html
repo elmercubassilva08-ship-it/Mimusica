@@ -97,7 +97,6 @@
         <h1>🎵 Mi Música</h1>
 
         <div class="search-box">
-            <!-- CORRECCIÓN: Se eliminó por completo el atributo value para que inicie 100% vacío -->
             <input type="text" id="inputBusqueda" placeholder="Escribe un artista o canción...">
             <button id="botonBuscar">Buscar</button>
         </div>
@@ -126,13 +125,14 @@
             const termino = inputBusqueda.value.trim();
             if (termino === "") return;
 
-            // Limpiar estados visuales
+            // Limpiar estados visuales anteriores
             textoError.style.display = 'none';
             textoError.textContent = '';
             textoEstado.textContent = "Buscando canción en servidores...";
 
-            // API de Deezer a través de un proxy público para saltar el bloqueo de seguridad (CORS) de los celulares
-            const urlAPI = `https://allorigins.win{encodeURIComponent(`https://deezer.com{encodeURIComponent(termino)}&limit=1`)}`;
+            // API de Deezer estructurada con concatenación simple e infalible
+            const urlDeezer original = 'https://deezer.com' + encodeURIComponent(termino) + '&limit=1';
+            const urlAPI = 'https://allorigins.win' + encodeURIComponent(urlDeezerOriginal);
 
             fetch(urlAPI)
                 .then(response => {
@@ -140,7 +140,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    // El proxy envuelve la respuesta en una propiedad llamada 'contents' como texto
+                    // El proxy devuelve la respuesta dentro de data.contents como un texto plano
                     const deezData = JSON.parse(data.contents);
 
                     if (!deezData.data || deezData.data.length === 0) {
@@ -149,25 +149,25 @@
 
                     const cancion = deezData.data[0];
                     
-                    // Mostrar los datos reales de la canción encontrada
-                    textoEstado.textContent = `Reproduciendo: ${cancion.title} - ${cancion.artist.name}`;
+                    // Mostrar los datos en pantalla
+                    textoEstado.textContent = "Reproduciendo: " + cancion.title + " - " + cancion.artist.name;
 
-                    // Reemplazar la URL por HTTPS obligatorio para evitar bloqueos en github.io
+                    // Cambiar la URL de audio a HTTPS para evitar bloqueos en github.io
                     const urlAudioSegura = cancion.preview.replace(/^http:\/\//i, 'https://');
 
-                    // Asignar el archivo de música al reproductor HTML5
+                    // Cargar el archivo directamente en el reproductor blanco
                     reproductorAudio.src = urlAudioSegura;
                     
-                    // Forzar el inicio del audio
+                    // Forzar el inicio de la música
                     reproductorAudio.play().catch(err => {
                         textoEstado.textContent = "Canción lista. Presiona Play.";
-                        console.log("La reproducción automática requiere interacción del usuario.");
+                        console.log("El navegador requiere que presiones Play manualmente.");
                     });
                 })
                 .catch(error => {
                     console.error("Error del sistema:", error);
                     textoEstado.textContent = "";
-                    mostrarError("Error en la red. Inténtalo de nuevo.");
+                    mostrarError(error.message || "Error en la red. Inténtalo de nuevo.");
                 });
         }
 
