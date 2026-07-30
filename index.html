@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música MP3</title>
     <style>
-        /* Mantenemos tu hermoso diseño original en rojo y gris oscuro */
+        /* Tu hermoso diseño original en rojo y gris oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -76,7 +76,6 @@
         .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .track-artist { font-size: 12px; color: #888888; margin-top: 4px; }
         
-        /* Aseguramos que tu reproductor de audio esté SIEMPRE visible y centrado */
         audio {
             width: 100%;
             margin-top: 15px;
@@ -96,10 +95,8 @@
 
     <div id="now-playing">Ninguna canción seleccionada</div>
     
-    <!-- Contenedor de la lista de canciones encontradas -->
     <div id="resultados"></div>
 
-    <!-- Tu reproductor clásico blanco fijo que nunca se va a ocultar -->
     <audio id="reproductor" controls></audio>
 </div>
 
@@ -115,12 +112,11 @@ function buscarMusicaMP3() {
     contenedor.innerHTML = "";
     nowPlaying.innerText = "Cargando audio streaming directo...";
     
-    // TRUCO DEFINITIVO DE DIRECCIÓN: Creamos el enlace completo usando plantillas limpias 
-    // conectadas a un servidor indexador masivo de archivos de sonido libre de bloqueos
-    const urlAudioDirecto = `https://scapi.link{encodeURIComponent(termino)}`;
+    // CORRECCIÓN DEFINITIVA DE ENLACE: Concatenación nativa limpia sin caracteres rotos
+    const urlAudioDirecto = "https://scapi.link" + encodeURIComponent(termino);
     reproductor.src = urlAudioDirecto;
     
-    // Creamos la tarjeta gris interactiva de tu diseño original
+    // Creamos la tarjeta gris interactiva
     const item = document.createElement('div');
     item.className = 'track-item';
     item.innerHTML = `
@@ -128,10 +124,10 @@ function buscarMusicaMP3() {
         <div class="track-artist">Toca aquí para preparar el archivo MP3</div>
     `;
     
-    // Al tocar el cuadro gris, le inyectamos la orden oficial al navegador
+    // Al hacer clic, se refresca la fuente de sonido de forma nativa en el reproductor
     item.onclick = function() {
         nowPlaying.innerText = "Pista conectada. Dale PLAY al reproductor blanco de abajo.";
-        reproductor.load(); // Fuerza al celular a descargar el archivo de sonido crudo
+        reproductor.load(); // Le indica al navegador que descargue el flujo de audio crudo
     };
     
     contenedor.appendChild(item);
