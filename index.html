@@ -81,7 +81,6 @@
             width: 100%;
             margin-top: 15px;
         }
-        .mensaje { text-align: center; color: #aaaaaa; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -96,7 +95,6 @@
 
     <div id="now-playing">Ninguna canción seleccionada</div>
     
-    <!-- Aquí aparecerá tu lista de canciones listas para reproducir -->
     <div id="resultados"></div>
 
     <audio id="reproductor" controls></audio>
@@ -112,33 +110,35 @@ function buscarMusicaMP3() {
     if (!termino) return;
     
     contenedor.innerHTML = "";
-    nowPlaying.innerText = "Canción lista abajo. Toca el cuadro gris para activarla.";
+    nowPlaying.innerText = "Toca el cuadro gris de abajo para activar la pista.";
     
-    // TRUCO TÉCNICO PROFESIONAL: Enlazamos el reproductor a un indexador libre de MP3
-    // que lee directamente el flujo de audio comercial sin restricciones cruzadas
-    reproductor.src = "https://hearthis.at" + encodeURIComponent(termino);
+    // Generamos la URL con la sintaxis de búsqueda exacta de archivos MP3
+    const urlBusquedaAudio = "https://hearthis.at" + encodeURIComponent(termino);
+    reproductor.src = urlBusquedaAudio;
     
-    // Creamos la tarjeta interactiva
     const item = document.createElement('div');
     item.className = 'track-item';
     item.innerHTML = `
-        <div class="track-title" style="color: #ff0000;">▶ Enlazar: ${termino}</div>
-        <div class="track-artist">Toca aquí para cargar audio streaming MP3</div>
+        <div class="track-title" style="color: #ff0000;">▶ Escuchar: ${termino}</div>
+        <div class="track-artist">Toca aquí para transmitir archivo MP3 directo</div>
     `;
     
-    // Al hacer clic, el usuario autoriza manualmente al navegador a iniciar el audio nativo
     item.onclick = function() {
-        nowPlaying.innerText = "Reproduciendo pista MP3: " + termino;
-        reproductor.play().catch(function(error) {
-            // Plan b: si el navegador móvil sigue de estricto, le avisa al usuario que use el botón nativo
-            nowPlaying.innerText = "Audio conectado. Dale PLAY al reproductor de abajo.";
+        nowPlaying.innerText = "Conectando stream de: " + termino;
+        
+        // Ejecutamos la carga física y la reproducción del flujo
+        reproductor.load();
+        reproductor.play().then(() => {
+            nowPlaying.innerText = "Reproduciendo: " + termino;
+        }).catch(error => {
+            // Plan de respaldo si el navegador móvil exige activación manual de volumen
+            nowPlaying.innerText = "Pista enlazada. Presiona PLAY en el reproductor blanco.";
         });
     };
     
     contenedor.appendChild(item);
 }
 
-// Soporte para presionar la tecla Enter en dispositivos móviles
 document.getElementById('busqueda').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         buscarMusicaMP3();
