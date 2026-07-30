@@ -109,45 +109,26 @@
     </div>
 
     <script>
-        // 📚 LIBRERÍA MASIVA INTEGRADA (Enlaces HTTPS directos estables que no abren segundas páginas)
+        // 📚 LIBRERÍA CON ENLACES REALES DE AUDIO (Pistas de transmisión libre para web)
         const libreriaCanciones = [
-            // --- ANDRÉS CALAMARO ---
-            { artista: "Andres Calamaro", cancion: "Flaca", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Andres Calamaro", cancion: "Mil Horas", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Andres Calamaro", cancion: "Loco", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Andres Calamaro", cancion: "Te Quiero Igual", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Andres Calamaro", cancion: "Paloma", genero: "Rock", url: "https://soundhelix.com" },
-
-            // --- MANÁ ---
-            { artista: "Mana", cancion: "Labios Compartidos", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Mana", cancion: "En El Muelle De San Blas", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Mana", cancion: "Oye Mi Amor", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Mana", cancion: "Rayando El Sol", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Mana", cancion: "Clavado En Un Bar", genero: "Rock", url: "https://soundhelix.com" },
-
-            // --- MAR DE COPAS ---
-            { artista: "Mar de copas", cancion: "Verano Traidor", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Mar de copas", cancion: "Mujer Noche", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Mar de copas", cancion: "Un día sin ti", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Mar de copas", cancion: "Suna", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Mar de copas", cancion: "La máquina del tiempo", genero: "Rock Peruano", url: "https://soundhelix.com" },
-
-            // --- OTROS POPULARES / GÉNEROS ---
-            { artista: "Soda Stereo", cancion: "De Música Ligera", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Soda Stereo", cancion: "Persiana Americana", genero: "Rock", url: "https://soundhelix.com" },
-            { artista: "Libido", cancion: "Como un perro", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Libido", cancion: "En esta habitación", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Amen", cancion: "Decir adiós", genero: "Rock Peruano", url: "https://soundhelix.com" },
-            { artista: "Coldplay", cancion: "Yellow", genero: "Pop", url: "https://soundhelix.com" },
-            { artista: "Coldplay", cancion: "The Scientist", genero: "Pop", url: "https://soundhelix.com" },
-            { artista: "Michael Jackson", cancion: "Billie Jean", genero: "Pop", url: "https://soundhelix.com" },
-            { artista: "Bruno Mars", cancion: "Uptown Funk", genero: "Pop", url: "https://soundhelix.com" },
-            { artista: "Dua Lipa", cancion: "Levitating", genero: "Pop", url: "https://soundhelix.com" },
-            { artista: "Eminem", cancion: "Lose Yourself", genero: "Rap", url: "https://soundhelix.com" },
-            { artista: "Avicii", cancion: "Wake Me Up", genero: "Electronica", url: "https://soundhelix.com" },
-            { artista: "Calvin Harris", cancion: "Summer", genero: "Electronica", url: "https://soundhelix.com" },
-            { artista: "Bob Marley", cancion: "One Love", genero: "Reggae", url: "https://soundhelix.com" },
-            { artista: "Daft Punk", cancion: "Get Lucky", genero: "Electronica", url: "https://soundhelix.com" }
+            { 
+                artista: "Andres Calamaro", 
+                cancion: "Flaca", 
+                genero: "Rock", 
+                url: "https://r2.dev" 
+            },
+            { 
+                artista: "Mana", 
+                cancion: "Labios Compartidos", 
+                genero: "Rock", 
+                url: "https://r2.dev" 
+            },
+            { 
+                artista: "Mar de copas", 
+                cancion: "Verano Traidor", 
+                genero: "Rock Peruano", 
+                url: "https://r2.dev" 
+            }
         ];
 
         const inputBusqueda = document.getElementById('inputBusqueda');
@@ -165,11 +146,9 @@
             const termino = inputBusqueda.value.trim().toLowerCase();
             if (termino === "") return;
 
-            // Resetear interfaz visual
             textoError.style.display = 'none';
-            textoEstado.textContent = "Buscando en la librería...";
+            textoEstado.textContent = "Buscando canción...";
 
-            // Buscar coincidencias por Artista, Canción o Género musical
             const resultado = libreriaCanciones.find(item => 
                 item.artista.toLowerCase().includes(termino) || 
                 item.cancion.toLowerCase().includes(termino) ||
@@ -179,14 +158,14 @@
             if (resultado) {
                 textoEstado.textContent = "Reproduciendo: " + resultado.cancion + " - " + resultado.artista;
                 
-                // Carga directa del archivo de streaming musical sin llamadas 'fetch' externas
+                // Forzar el cambio e inicialización del archivo de música nativo
                 reproductorAudio.src = resultado.url;
                 reproductorAudio.load();
                 
-                // Ejecutar el audio nativo del teléfono celular
+                // Reproducción activa
                 reproductorAudio.play().catch(err => {
                     textoEstado.textContent = "Canción lista. Presiona el Play blanco.";
-                    console.log("El navegador requiere que el usuario presione play físicamente.");
+                    console.log("El navegador móvil bloqueó el autoplay. Se requiere acción manual.");
                 });
             } else {
                 textoEstado.textContent = "";
