@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música Global</title>
     <style>
-        /* Diseño original impecable en rojo y gris oscuro */
+        /* Mantenemos intacto tu diseño original en rojo y oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -60,13 +60,12 @@
             width: 100%;
             border-radius: 15px;
             overflow: hidden;
-            display: none; /* Oculto al inicio, aparece al buscar */
+            display: none;
             background-color: #000000;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
         iframe {
             width: 100%;
-            height: 300px;
+            height: 260px;
             border: none;
         }
     </style>
@@ -78,46 +77,19 @@
     
     <div class="search-box">
         <input type="text" id="busqueda" placeholder="Busca cualquier canción o artista...">
-        <button id="btnBuscar" onclick="buscarInterno()">Buscar</button>
+        <button id="btnBuscar">Buscar</button>
     </div>
 
     <div id="now-playing">Ninguna canción seleccionada</div>
     
-    <!-- El cuadro reproductor interno que cargará la música dentro de tu app -->
+    <!-- El cuadro reproductor interno -->
     <div id="player-wrapper" class="player-wrapper">
         <iframe id="reproductor" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 </div>
 
-<script>
-function buscarInterno() {
-    const termino = document.getElementById('busqueda').value.trim();
-    const wrapper = document.getElementById('player-wrapper');
-    const iframe = document.getElementById('reproductor');
-    const nowPlaying = document.getElementById('now-playing');
-    
-    if (!termino) return;
-    
-    nowPlaying.innerText = "Cargando lista de reproducción interna...";
-    
-    // Generamos un enlace de búsqueda embebido oficial de YouTube estructurado de forma limpia
-    // Usamos el formato "embed" que está permitido por los navegadores dentro de páginas web
-    const urlLimpia = "https://youtube.com" + encodeURIComponent(termino) + "&autoplay=1&modestbranding=1&rel=0";
-    
-    // Inyectamos la música en el cuadro y lo hacemos visible en tu tarjeta gris
-    iframe.src = urlLimpia;
-    wrapper.style.display = "block";
-    
-    nowPlaying.innerText = "Reproduciendo éxitos de: " + termino;
-}
-
-// Soporte técnico para que funcione al presionar la tecla Enter en teclados móviles
-document.getElementById('busqueda').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        buscarInterno();
-    }
-});
-</script>
+<!-- Enlazamos la librería de lógica externa de forma limpia -->
+<script src="app.js"></script>
 
 </body>
 </html>
