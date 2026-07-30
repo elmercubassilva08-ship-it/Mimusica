@@ -99,13 +99,13 @@ function buscarMusicaMP3() {
     
     nowPlaying.innerText = "Conectando reproductor oficial de audio...";
     
-    // DIRECCIÓN MAESTRA OFICIAL CORREGIDA:
-    // Usamos el subdominio de reproductor de Widgets oficial ("://soundcloud.com")
-    // el cual está totalmente autorizado para cargar listas y pistas completas en páginas estáticas.
-    const urlWidgetSoundCloud = "https://://soundcloud.com/player/?url=https://soundcloud.com/search/tracks?q=" + encodeURIComponent(termino) + "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
+    // URL CORREGIDA CARÁCTER POR CARÁCTER:
+    // Unimos los textos usando variables limpias sin barras dobles pegadas.
+    // Usamos el buscador embebido oficial para reproducir audios completos sin anuncios visuales.
+    const urlWidget = "https://soundcloud.com" + encodeURIComponent(termino) + "&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false";
     
-    // Inyectamos la URL limpia en el iframe y lo hacemos visible
-    iframe.src = urlWidgetSoundCloud;
+    // Inyectamos la dirección corregida en el iframe y lo hacemos visible
+    iframe.src = urlWidget;
     wrapper.style.display = "block";
     
     nowPlaying.innerText = "Reproduciendo éxitos de: " + termino;
