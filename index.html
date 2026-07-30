@@ -97,8 +97,7 @@
         <h1>🎵 Mi Música</h1>
 
         <div class="search-box">
-            <!-- Quitamos el atributo 'value' para que el buscador inicie limpio y vacío -->
-            <input type="text" id="inputBusqueda" placeholder="Escribe un artista o canción...">
+            <input type="text" id="inputBusqueda" placeholder="Escribe un artista o canción..." value="Verano traidor">
             <button id="botonBuscar">Buscar</button>
         </div>
 
@@ -117,62 +116,64 @@
         const textoEstado = document.getElementById('textoEstado');
         const textoError = document.getElementById('textoError');
 
-        // Asignamos la función correctamente sin ejecutarla de inmediato
-        botonBuscar.addEventListener('click', buscarMusicaApple);
+        botonBuscar.addEventListener('click', buscarMusicaJSONP);
         inputBusqueda.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') buscarMusicaApple();
+            if (e.key === 'Enter') buscarMusicaJSONP();
         });
 
-        function buscarMusicaApple() {
-            const termino = inputBusqueda.value.trim();
-            
-            // Si el usuario presiona buscar con el cuadro vacío, no hace nada
-            if (termino === "") {
-                textoEstado.textContent = "Por favor, escribe algo para buscar.";
+        // 🌟 FUNCIÓN GLOBAL PARA PROCESAR LA RESPUESTA DE ITUNES (Evita el bloqueo de CORS)
+        window.procesarRespuestaMusica = function(data) {
+            // Eliminar el script temporal creado para la consulta
+            const scriptViejo = document.getElementById('script-jsonp');
+            if (scriptViejo) scriptViejo.remove();
+
+            if (!data.results || data.results.length === 0) {
+                textoEstado.textContent = "";
+                mostrarError("No se encontraron canciones para esta búsqueda.");
                 return;
             }
 
-            // Limpiar estados visuales
+            const cancion = data.results[0];
+            
+            // Mostrar info en pantalla
+            textoEstado.textContent = `Reproduciendo: ${cancion.trackName} - ${cancion.artistName}`;
+
+            // Asignar y reproducir el audio
+            reproductorAudio.src = cancion.previewUrl;
+            reproductorAudio.play().catch(err => {
+                textoEstado.textContent = "Canción lista. Dale play.";
+                console.log("Reproducción automática pausada por el navegador.");
+            });
+        };
+
+        function buscarMusicaJSONP() {
+            const termino = inputBusqueda.value.trim();
+            if (termino === "") return;
+
+            // Resetear la interfaz
             textoError.style.display = 'none';
-            textoError.textContent = '';
-            textoEstado.textContent = "Buscando pista en línea...";
+            textoEstado.textContent = "Buscando canción...";
 
-            // API global de iTunes: ultra rápida, sin anuncios y 100% compatible con HTTPS/CORS
-            const urlAPI = `https://apple.com{encodeURIComponent(termino)}&media=music&limit=1`;
+            // Eliminar scripts JSONP colgados de búsquedas anteriores si existen
+            const scriptViejo = document.getElementById('script-jsonp');
+            if (scriptViejo) scriptViejo.remove();
 
-            fetch(urlAPI)
-                .then(response => {
-                    if (!response.ok) throw new Error("Error al conectar con el servidor de música.");
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.results || data.results.length === 0) {
-                        throw new Error("No se encontraron canciones para esta búsqueda.");
-                    }
+            // Creamos una solicitud JSONP inyectando un tag <script> dinámico en el HTML.
+            // Al agregar '&callback=procesarRespuestaMusica', saltamos el bloqueo CORS por completo.
+            const urlAPI = `https://apple.com{encodeURIComponent(termino)}&media=music&limit=1&callback=procesarRespuestaMusica`;
 
-                    const cancion = data.results[0];
-                    
-                    // Actualizar textos con el resultado real encontrado
-                    textoEstado.textContent = `Reproduciendo: ${cancion.trackName} - ${cancion.artistName}`;
+            const nuevoScript = document.createElement('script');
+            nuevoScript.id = 'script-jsonp';
+            nuevoScript.src = urlAPI;
 
-                    // Asignar el enlace de audio directo (.m4a/.mp3) al reproductor nativo
-                    reproductorAudio.src = cancion.previewUrl;
-                    
-                    // Forzar reproducción
-                    reproductorAudio.play().catch(err => {
-                        console.log("Reproducción automática pausada. Requiere clic en Play.");
-                    });
-                })
-                .catch(error => {
-                    console.error("Error detectado:", error);
-                    textoEstado.textContent = "";
-                    
-                    if (error.message.includes('Failed to fetch')) {
-                        mostrarError("Error en la red. Verifica tu conexión a internet.");
-                    } else {
-                        mostrarError(error.message);
-                    }
-                });
+            // Si hay un error real de internet (offline), capturarlo aquí
+            nuevoScript.onerror = function() {
+                textoEstado.textContent = "";
+                mostrarError("Error en la red o el servidor no responde.");
+            };
+
+            // Inyectar el script para lanzar la búsqueda automáticamente
+            document.body.appendChild(nuevoScript);
         }
 
         function mostrarError(mensaje) {
