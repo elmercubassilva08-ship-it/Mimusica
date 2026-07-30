@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música Global</title>
     <style>
-        /* Mantenemos tu diseño original intacto en rojo y oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -53,7 +52,6 @@
         
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
         
-        /* Contenedor de la lista de canciones encontradas */
         #resultados {
             text-align: left;
             margin-bottom: 25px;
@@ -73,9 +71,8 @@
         .track-item:hover { background: #3f3f3f; }
         .track-info { flex: 1; overflow: hidden; }
         .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .track-duration { font-size: 12px; color: #888888; }
+        .track-artist { font-size: 12px; color: #888888; }
         
-        /* Reproductor nativo de audio MP3 */
         audio {
             width: 100%;
             margin-top: 15px;
@@ -94,15 +91,13 @@
     </div>
 
     <div id="now-playing">Ninguna canción seleccionada</div>
-    
-    <!-- Lista donde se cargarán las canciones en formato MP3 -->
     <div id="resultados"></div>
 
-    <!-- Tu reproductor nativo de audio rápido e inmune a bloqueos -->
     <audio id="reproductor" controls></audio>
 </div>
 
-<script src="app.js"></script>
+<!-- Forzamos al navegador a leer la última versión agregando un número aleatorio al final -->
+<script src="app.js?v=2.0"></script>
 
 </body>
 </html>
