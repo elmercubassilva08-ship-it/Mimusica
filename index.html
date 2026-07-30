@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música Global</title>
     <style>
-        /* Mantenemos tu impecable diseño original en rojo y oscuro */
+        /* Tu diseño original impecable en rojo y gris oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -53,18 +53,18 @@
         
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
         
-        /* Contenedor del reproductor oficial integrado */
+        /* Cuadro contenedor del reproductor que aparecerá abajo */
         .player-wrapper {
             margin-top: 15px;
             width: 100%;
-            border-radius: 12px;
+            border-radius: 15px;
             overflow: hidden;
             display: none; /* Se activa al buscar */
-            background-color: #000;
+            background-color: #000000;
         }
         iframe {
             width: 100%;
-            height: 380px;
+            height: 340px;
             border: none;
         }
     </style>
@@ -81,9 +81,9 @@
 
     <div id="now-playing">Ninguna canción seleccionada</div>
     
-    <!-- El reproductor integrado de Spotify cargará aquí adentro sin salir de la app -->
+    <!-- El cuadro interno que cargará la lista de música sin anuncios -->
     <div id="player-wrapper" class="player-wrapper">
-        <iframe id="reproductor" src="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <iframe id="reproductor" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 </div>
 
