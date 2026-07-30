@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Mi Música Global</title>
     <style>
-        /* Mantenemos intacto tu diseño original en rojo y oscuro */
+        /* Mantenemos tu diseño original intacto en rojo y oscuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f0f0f;
@@ -28,7 +28,6 @@
             text-align: center;
         }
         h1 { font-size: 26px; margin-bottom: 20px; color: #ff0000; }
-        
         .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
         input {
             flex: 1;
@@ -54,20 +53,34 @@
         
         #now-playing { font-size: 14px; color: #aaaaaa; margin-bottom: 15px; font-style: italic; }
         
-        /* Contenedor del reproductor interno */
-        .player-wrapper {
+        /* Contenedor de la lista de canciones encontradas */
+        #resultados {
+            text-align: left;
+            margin-bottom: 25px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #2f2f2f;
+            margin: 8px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .track-item:hover { background: #3f3f3f; }
+        .track-info { flex: 1; overflow: hidden; }
+        .track-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-duration { font-size: 12px; color: #888888; }
+        
+        /* Reproductor nativo de audio MP3 */
+        audio {
+            width: 100%;
             margin-top: 15px;
-            width: 100%;
-            border-radius: 15px;
-            overflow: hidden;
-            display: none;
-            background-color: #000000;
         }
-        iframe {
-            width: 100%;
-            height: 260px;
-            border: none;
-        }
+        .mensaje { text-align: center; color: #aaaaaa; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -82,13 +95,13 @@
 
     <div id="now-playing">Ninguna canción seleccionada</div>
     
-    <!-- El cuadro reproductor interno -->
-    <div id="player-wrapper" class="player-wrapper">
-        <iframe id="reproductor" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    </div>
+    <!-- Lista donde se cargarán las canciones en formato MP3 -->
+    <div id="resultados"></div>
+
+    <!-- Tu reproductor nativo de audio rápido e inmune a bloqueos -->
+    <audio id="reproductor" controls></audio>
 </div>
 
-<!-- Enlazamos la librería de lógica externa de forma limpia -->
 <script src="app.js"></script>
 
 </body>
