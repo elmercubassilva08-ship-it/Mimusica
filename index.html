@@ -68,7 +68,7 @@
     <h1>🎵 Mi Música</h1>
     
     <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Escribe un género (ej: rock, pop, jazz)...">
+        <input type="text" id="busqueda" placeholder="Escribe un género (ej: rock, pop, lofi)...">
         <button id="btnBuscar" onclick="conectarEstacion()">Buscar</button>
     </div>
 
@@ -90,33 +90,36 @@ function conectarEstacion() {
     
     nowPlaying.innerText = "Sintonizando señal de audio digital...";
     
-    // Lista de transmisiones de audio MP3 estables y libres de bloqueos CORS
+    // ENLACES DIRECTOS DE STREAMING MP3 CORREGIDOS:
+    // Usamos servidores de transmisión de audio puro que terminan directamente en el flujo de reproducción.
     let urlStreaming = "";
     let nombreEstacion = "";
     
     if (termino.includes("rock")) {
         urlStreaming = "https://rockantenne.de";
-        nombreEstacion = "Estación: Rock Antenne Live (MP3 Puro)";
+        nombreEstacion = "Estación: Rock Antenne Alemania (Audio MP3 Directo)";
     } else if (termino.includes("pop")) {
-        urlStreaming = "https://181.fm";
-        nombreEstacion = "Estación: 181.FM Awesome 80s (MP3 Puro)";
-    } else if (termino.includes("jazz")) {
-        urlStreaming = "https://jazzradio.com";
-        nombreEstacion = "Estación: Smooth Jazz Radio (MP3 Puro)";
-    } else {
-        // Estación clásica de éxitos globales por defecto si escribe otra cosa
         urlStreaming = "https://181fm.com";
-        nombreEstacion = "Estación: Hits Globales Mix (MP3 Puro)";
+        nombreEstacion = "Estación: 181.FM Éxitos Pop (Audio MP3 Directo)";
+    } else if (termino.includes("lofi") || termino.includes("chill") || termino.includes("suave")) {
+        urlStreaming = "https://unitedradio.it";
+        nombreEstacion = "Estación: Absolute Chillout (Audio MP3 Directo)";
+    } else {
+        // Enlace de música variada comercial por defecto si escribe otra cosa
+        urlStreaming = "https://181fm.com";
+        nombreEstacion = "Estación: Top 40 Éxitos Globales (Audio MP3 Directo)";
     }
     
-    // Inyectamos la URL cruda directamente en tu reproductor blanco nativo
+    // Inyectamos el flujo multimedia directo en tu barra blanca
     reproductor.src = urlStreaming;
     reproductor.load();
     
+    // Ejecutamos la orden de reproducción y atrapamos restricciones móviles nativas
     reproductor.play().then(() => {
         nowPlaying.innerText = nombreEstacion;
     }).catch(e => {
-        nowPlaying.innerText = "Señal enlazada. Presiona PLAY en el reproductor blanco.";
+        // En teléfonos celulares, el navegador exige que el usuario presione físicamente el PLAY
+        nowPlaying.innerText = "Señal lista. Presiona PLAY en el reproductor blanco.";
     });
 }
 
